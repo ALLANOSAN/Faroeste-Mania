@@ -1,0 +1,62 @@
+[gd_scene load_steps=5 format=3 uid="uid://cs33efdbt36c1"]
+
+[ext_resource type="Texture2D" uid="uid://dqug3g25bsg5" path="res://Assets/Art/icons8-voltar-64.png" id="1_fo7ht"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0gabg"]
+bg_color = Color(1.15514e-06, 0.636828, 0.951158, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kfyjv"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nnpiv"]
+bg_color = Color(1, 1, 1, 1)
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0gabg")
+
+[node name="Chamar Menu som" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 291.0
+offset_top = 798.0
+offset_right = 792.0
+offset_bottom = 936.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 85
+theme_override_styles/normal = SubResource("StyleBoxFlat_kfyjv")
+text = "SOM"
+
+[node name="Chamar Menu Leadboard" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 291.0
+offset_top = 976.0
+offset_right = 792.0
+offset_bottom = 1114.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 85
+theme_override_styles/normal = SubResource("StyleBoxFlat_nnpiv")
+text = "Leadboard"
+
+[node name="Button" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = -18.0
+offset_top = 12.0
+offset_right = 54.0
+offset_bottom = 84.0
+scale = Vector2(2.285, 2.285)
+icon = ExtResource("1_fo7ht")
+flat = true

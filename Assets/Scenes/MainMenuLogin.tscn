@@ -1,0 +1,130 @@
+[gd_scene load_steps=8 format=3 uid="uid://bxmlm1wuxs2e4"]
+
+[ext_resource type="Texture2D" uid="uid://ccuqvqrqoy3bc" path="res://Assets/Art/Tela inicial do jogo mobile png.png" id="1_wn5b6"]
+[ext_resource type="Texture2D" uid="uid://dswktv0mmhgtn" path="res://Assets/Art/ilustracao-em-vetor-revolver-vintage-remixada-da-arte-de-elizabeth-johnson.png" id="2_7w75u"]
+[ext_resource type="Texture2D" uid="uid://eiosej1lqcv7" path="res://Assets/Art/icons8-opções-50.png" id="3_wgp03"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_imcun"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="Animation" id="Animation_msa8t"]
+resource_name = "Texto_Piscando"
+length = 2.67
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.4, 2.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_xi6ib"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_d5utn"]
+_data = {
+&"RESET": SubResource("Animation_xi6ib"),
+&"Texto_Piscando": SubResource("Animation_msa8t")
+}
+
+[node name="Canvas" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Menu Principal" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Fundo" type="TextureRect" parent="Menu Principal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_wn5b6")
+
+[node name="Icone" type="TextureRect" parent="Menu Principal"]
+layout_mode = 0
+offset_left = 304.0
+offset_top = 147.0
+offset_right = 783.0
+offset_bottom = 600.0
+texture = ExtResource("2_7w75u")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Menu Principal"]
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 1029.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 80
+text = "Faroeste Mania"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Button" type="Button" parent="Menu Principal"]
+layout_mode = 0
+offset_left = 334.0
+offset_top = 1170.0
+offset_right = 767.0
+offset_bottom = 1311.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxFlat_imcun")
+text = "Clique para fazer login"
+icon_alignment = 1
+
+[node name="Button2" type="Button" parent="Menu Principal"]
+layout_mode = 0
+offset_left = 932.0
+offset_top = 38.0
+offset_right = 990.0
+offset_bottom = 96.0
+scale = Vector2(2.135, 2.135)
+icon = ExtResource("3_wgp03")
+flat = true
+
+[node name="Texto Piscando" type="Label" parent="Menu Principal"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_top = 1029.0
+offset_right = 1073.0
+offset_bottom = 1920.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 55
+text = "Clique para iniciar"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AnimationText" type="AnimationPlayer" parent="Menu Principal/Texto Piscando"]
+libraries = {
+&"": SubResource("AnimationLibrary_d5utn")
+}
