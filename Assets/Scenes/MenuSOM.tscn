@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://c2yj0wyjn5lmb"]
+[gd_scene load_steps=28 format=3 uid="uid://c2yj0wyjn5lmb"]
 
 [ext_resource type="Texture2D" uid="uid://bm0hfr3xqto41" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-03.png" id="1_ivs8f"]
 [ext_resource type="Texture2D" uid="uid://be700gl5f8jyk" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-13.png" id="2_0dnqj"]
@@ -6,26 +6,52 @@
 [ext_resource type="Texture2D" uid="uid://bjsh2iuucbimf" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-02.png" id="4_06nrb"]
 [ext_resource type="Texture2D" uid="uid://xcnktsnfu44w" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-04.png" id="5_so03q"]
 [ext_resource type="Texture2D" uid="uid://dc21a1cxhq60g" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-05.png" id="6_pp27f"]
+[ext_resource type="Texture2D" uid="uid://v74sxutuwujq" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-06.png" id="7_so03q"]
 [ext_resource type="Texture2D" uid="uid://v8lvg0m4mywc" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-07.png" id="7_vii0n"]
 [ext_resource type="Texture2D" uid="uid://b4w3bi0r711xu" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-08.png" id="8_myppf"]
 [ext_resource type="Texture2D" uid="uid://dxejmi16vmwjc" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-09.png" id="9_j2reu"]
 [ext_resource type="Texture2D" uid="uid://blk78pg7706xg" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-11.png" id="10_nsm3t"]
+[ext_resource type="Texture2D" uid="uid://cu0yh7hfi5qyy" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-10.png" id="11_pp27f"]
 [ext_resource type="Texture2D" uid="uid://kyh3vhn35xmw" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-12.png" id="11_uxisp"]
 [ext_resource type="Texture2D" uid="uid://c1dd34b68ech4" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-14.png" id="12_osvhe"]
 [ext_resource type="Texture2D" uid="uid://bn8f6shcosbhk" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-15.png" id="13_2sq8b"]
 [ext_resource type="Texture2D" uid="uid://b5rnobqortmwg" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-16.png" id="14_033jc"]
 [ext_resource type="Texture2D" uid="uid://dqs176yialppi" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-17.png" id="15_l75jg"]
 [ext_resource type="Texture2D" uid="uid://c00nldan5pngn" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-18.png" id="16_13wwb"]
+[ext_resource type="Texture2D" uid="uid://bh6yb7tw50p0s" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-19.png" id="19_vii0n"]
+[ext_resource type="Texture2D" uid="uid://rp6166bgqvd0" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-20.png" id="20_myppf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pnoir"]
 bg_color = Color(0.637183, 8.85606e-05, 0.54599, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_so03q"]
+bg_color = Color(1, 1, 0, 1)
+border_width_left = 70
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 4
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+expand_margin_left = 70.0
+expand_margin_top = 17.0
+expand_margin_bottom = 12.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_so03q"]
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_pp27f"]
+font_size = 46
+font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="Animation" id="Animation_uibvo"]
 resource_name = "CheckBox"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:theme_override_icons/unchecked_disabled")
+tracks/0/path = NodePath(".:theme_override_icons/unchecked")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -41,22 +67,22 @@ tracks/1/path = NodePath(".:theme_override_icons/checked")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0.017, 0.021, 0.029, 0.033, 0.038, 0.042, 0.046, 0.054, 0.058),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0.017, 0.021, 0.025, 0.029, 0.033, 0.038, 0.042, 0.046, 0.054, 0.058),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [ExtResource("4_06nrb"), ExtResource("5_so03q"), ExtResource("6_pp27f"), ExtResource("6_pp27f"), ExtResource("7_vii0n"), ExtResource("8_myppf"), ExtResource("9_j2reu"), ExtResource("9_j2reu"), ExtResource("10_nsm3t")]
+"values": [ExtResource("4_06nrb"), ExtResource("1_ivs8f"), ExtResource("5_so03q"), ExtResource("6_pp27f"), ExtResource("7_so03q"), ExtResource("7_vii0n"), ExtResource("8_myppf"), ExtResource("9_j2reu"), ExtResource("11_pp27f"), ExtResource("10_nsm3t")]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath(".:theme_override_icons/unchecked")
+tracks/2/path = NodePath(".:theme_override_icons/unchecked_disabled")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0.075, 0.079, 0.083, 0.088, 0.092, 0.096, 0.1, 0.104),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0.075, 0.079, 0.083, 0.088, 0.092, 0.096, 0.1, 0.104, 0.108),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [ExtResource("11_uxisp"), ExtResource("2_0dnqj"), ExtResource("12_osvhe"), ExtResource("13_2sq8b"), ExtResource("14_033jc"), ExtResource("15_l75jg"), ExtResource("16_13wwb"), ExtResource("16_13wwb")]
+"values": [ExtResource("11_uxisp"), ExtResource("2_0dnqj"), ExtResource("12_osvhe"), ExtResource("13_2sq8b"), ExtResource("14_033jc"), ExtResource("15_l75jg"), ExtResource("16_13wwb"), ExtResource("19_vii0n"), ExtResource("20_myppf")]
 }
 
 [sub_resource type="Animation" id="Animation_fo1qh"]
@@ -76,7 +102,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath(".:theme_override_icons/unchecked")
+tracks/1/path = NodePath(".:theme_override_icons/unchecked_disabled")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -105,23 +131,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = -67.0
+offset_right = 3.0
+offset_bottom = -67.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_pnoir")
-
-[node name="Label4" type="Label" parent="Panel"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -428.0
-offset_top = 846.0
-offset_right = -236.0
-offset_bottom = 962.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 85
-text = "VOLUME"
 
 [node name="Label" type="Label" parent="Panel"]
 layout_mode = 1
@@ -144,27 +160,43 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -139.0
-offset_top = -111.0
-offset_right = -66.0
-offset_bottom = -95.0001
+offset_left = -312.0
+offset_top = -159.0
+offset_right = 80.0
+offset_bottom = -143.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(6.745, 6.745)
+scale = Vector2(1.625, 1.625)
+theme_override_styles/slider = SubResource("StyleBoxFlat_so03q")
+value = 100.0
+
+[node name="Label4" type="Label" parent="Panel/HSlider"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -67.6923
+offset_top = -8.0
+offset_right = -392.692
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "VOLUME"
+label_settings = SubResource("LabelSettings_so03q")
 
 [node name="Label3" type="Label" parent="Panel"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -466.0
-offset_top = 660.0
-offset_right = -229.0
-offset_bottom = 776.0
+offset_left = -429.0
+offset_top = 665.0
+offset_right = -301.0
+offset_bottom = 729.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 85
 text = "MUTE"
+label_settings = SubResource("LabelSettings_pp27f")
 
 [node name="CheckBox" type="CheckBox" parent="Panel"]
 layout_mode = 1
@@ -173,16 +205,16 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -194.0
-offset_top = -314.0
-offset_right = -162.0
-offset_bottom = -282.0
+offset_left = -269.0
+offset_top = -318.0
+offset_right = -237.0
+offset_bottom = -286.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(4.09, 4.09)
+scale = Vector2(3.19, 3.19)
 theme_override_icons/checked = ExtResource("1_ivs8f")
-theme_override_icons/unchecked = ExtResource("2_0dnqj")
-theme_override_icons/unchecked_disabled = ExtResource("3_jvoba")
+theme_override_icons/unchecked = ExtResource("3_jvoba")
+theme_override_icons/unchecked_disabled = ExtResource("2_0dnqj")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Panel/CheckBox"]
 libraries = {
