@@ -1,6 +1,7 @@
-[gd_scene load_steps=28 format=3 uid="uid://c2yj0wyjn5lmb"]
+[gd_scene load_steps=30 format=3 uid="uid://c2yj0wyjn5lmb"]
 
 [ext_resource type="Texture2D" uid="uid://bm0hfr3xqto41" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-03.png" id="1_ivs8f"]
+[ext_resource type="Texture2D" uid="uid://dfwre6k8iq46l" path="res://Assets/Art/Circulo Botão.png" id="1_pp27f"]
 [ext_resource type="Texture2D" uid="uid://be700gl5f8jyk" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-13.png" id="2_0dnqj"]
 [ext_resource type="Texture2D" uid="uid://cne6rl3m2jryy" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-01.png" id="3_jvoba"]
 [ext_resource type="Texture2D" uid="uid://bjsh2iuucbimf" path="res://Assets/Art/icons8-caixa-de-selecção-seleccionada-2/frame-02.png" id="4_06nrb"]
@@ -29,15 +30,20 @@ bg_color = Color(1, 1, 0, 1)
 border_width_left = 70
 border_width_top = 5
 border_width_right = 5
-border_width_bottom = 4
-border_color = Color(1, 1, 1, 1)
+border_width_bottom = 5
+border_color = Color(0.728822, 0.728822, 0.728822, 1)
 corner_radius_top_left = 7
 corner_radius_top_right = 7
 corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 expand_margin_left = 70.0
-expand_margin_top = 17.0
-expand_margin_bottom = 12.0
+expand_margin_top = 13.0
+expand_margin_bottom = 13.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vii0n"]
+bg_color = Color(0.659746, 0.482998, 0.977074, 1)
+expand_margin_top = 3.0
+expand_margin_bottom = 3.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_so03q"]
 font_color = Color(0, 0, 0, 1)
@@ -161,13 +167,15 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -312.0
-offset_top = -159.0
+offset_top = -161.0
 offset_right = 80.0
-offset_bottom = -143.0
+offset_bottom = -140.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(1.625, 1.625)
+theme_override_icons/grabber = ExtResource("1_pp27f")
 theme_override_styles/slider = SubResource("StyleBoxFlat_so03q")
+theme_override_styles/grabber_area = SubResource("StyleBoxFlat_vii0n")
 value = 100.0
 
 [node name="Label4" type="Label" parent="Panel/HSlider"]
@@ -176,9 +184,9 @@ anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -67.6923
-offset_top = -8.0
+offset_top = -1.84616
 offset_right = -392.692
-offset_bottom = -1.0
+offset_bottom = 5.15384
 grow_horizontal = 2
 grow_vertical = 2
 text = "VOLUME"

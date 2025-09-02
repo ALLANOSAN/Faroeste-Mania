@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="Jogo Mobile"
+run/main_scene="uid://bxmlm1wuxs2e4"
 config/features=PackedStringArray("4.4", "Mobile")
 
 [display]
