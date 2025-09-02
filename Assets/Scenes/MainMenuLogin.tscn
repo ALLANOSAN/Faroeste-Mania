@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bxmlm1wuxs2e4"]
+[gd_scene load_steps=10 format=3 uid="uid://bxmlm1wuxs2e4"]
 
 [ext_resource type="Texture2D" uid="uid://ccuqvqrqoy3bc" path="res://Assets/Art/Tela inicial do jogo mobile png.png" id="1_wn5b6"]
 [ext_resource type="Texture2D" uid="uid://dswktv0mmhgtn" path="res://Assets/Art/ilustracao-em-vetor-revolver-vintage-remixada-da-arte-de-elizabeth-johnson.png" id="2_7w75u"]
@@ -28,7 +28,7 @@ corner_radius_bottom_left = 59
 
 [sub_resource type="LabelSettings" id="LabelSettings_wn5b6"]
 font_size = 76
-font_color = Color(0, 0, 0, 0)
+font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="Animation" id="Animation_7w75u"]
 resource_name = "TextoAnimado"
@@ -47,24 +47,8 @@ tracks/0/keys = {
 "values": [Color(0, 0, 0, 1), Color(0, 0, 0, 0)]
 }
 
-[sub_resource type="Animation" id="Animation_wgp03"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:label_settings:font_color")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Color(0, 0, 0, 0)]
-}
-
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_imcun"]
 _data = {
-&"RESET": SubResource("Animation_wgp03"),
 &"TextoAnimado": SubResource("Animation_7w75u")
 }
 
