@@ -1,5 +1,6 @@
-[gd_scene load_steps=10 format=3 uid="uid://bxmlm1wuxs2e4"]
+[gd_scene load_steps=11 format=3 uid="uid://bxmlm1wuxs2e4"]
 
+[ext_resource type="Script" uid="uid://dq35c23u0w8xd" path="res://Assets/Scripts/main_menu_login.gd" id="1_7w75u"]
 [ext_resource type="Texture2D" uid="uid://ccuqvqrqoy3bc" path="res://Assets/Art/Tela inicial do jogo mobile png.png" id="1_wn5b6"]
 [ext_resource type="Texture2D" uid="uid://dswktv0mmhgtn" path="res://Assets/Art/ilustracao-em-vetor-revolver-vintage-remixada-da-arte-de-elizabeth-johnson.png" id="2_7w75u"]
 [ext_resource type="Texture2D" uid="uid://eiosej1lqcv7" path="res://Assets/Art/icons8-opções-50.png" id="3_wgp03"]
@@ -52,13 +53,14 @@ _data = {
 &"TextoAnimado": SubResource("Animation_7w75u")
 }
 
-[node name="Canvas" type="Control"]
+[node name="MainMenuLogin" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_7w75u")
 
 [node name="Menu Principal" type="Panel" parent="."]
 layout_mode = 1
@@ -87,7 +89,7 @@ texture = ExtResource("2_7w75u")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Nome" type="Label" parent="Menu Principal"]
+[node name="GameTitle" type="Label" parent="Menu Principal"]
 layout_mode = 0
 offset_right = 1080.0
 offset_bottom = 1029.0
