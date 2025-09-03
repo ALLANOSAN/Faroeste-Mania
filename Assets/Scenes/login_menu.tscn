@@ -1,0 +1,76 @@
+[gd_scene load_steps=4 format=3 uid="uid://c1rqj50d1mcgg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4jxjk"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="LabelSettings" id="LabelSettings_6258x"]
+font_size = 13
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_pucf6"]
+font_size = 13
+font_color = Color(0, 0, 0, 1)
+
+[node name="LoginMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.952941, 0.960784, 0.972549, 1)
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -284.0
+offset_top = -216.0
+offset_right = -208.0
+offset_bottom = -161.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(6.915, 6.915)
+theme_override_styles/panel = SubResource("StyleBoxFlat_4jxjk")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="Login" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Login/Email"
+label_settings = SubResource("LabelSettings_6258x")
+
+[node name="CampoLogin" type="LineEdit" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+max_length = 100
+
+[node name="Senha" type="Label" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Senha"
+label_settings = SubResource("LabelSettings_pucf6")
+
+[node name="CampoSenha" type="LineEdit" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+max_length = 100
