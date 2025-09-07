@@ -1,60 +1,108 @@
-[gd_scene load_steps=6 format=3 uid="uid://llda5adqeuc7"]
+[gd_scene load_steps=8 format=3 uid="uid://llda5adqeuc7"]
 
 [ext_resource type="Texture2D" uid="uid://b6ujtemd20iwu" path="res://Assets/Art/Cenário jogo mobile png.png" id="1_d1gdj"]
+[ext_resource type="Script" uid="uid://c763hpwiyv4gp" path="res://Assets/Scripts/mapa_jogo.gd" id="1_wjigt"]
 [ext_resource type="Texture2D" uid="uid://c48a88p8b5bl1" path="res://Assets/Art/icons8-coração-48.png" id="2_jpdh3"]
 [ext_resource type="Texture2D" uid="uid://dpmqtvhes2psp" path="res://Assets/Art/icons8-moeda-48.png" id="3_gbiob"]
 [ext_resource type="Texture2D" uid="uid://dd0b635hpvq4j" path="res://Assets/Art/unity-removebg-preview.png" id="4_jpdh3"]
+[ext_resource type="AudioStream" uid="uid://d4lrscj2vgmhe" path="res://Assets/Audio/tiro.mp3" id="6_5iwor"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gbiob"]
 radius = 109.0
 height = 288.0
 
-[node name="Node2D" type="Node2D"]
+[node name="MapaJogo" type="Node2D"]
+script = ExtResource("1_wjigt")
 
 [node name="TextureRect" type="TextureRect" parent="."]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 1080.0
+offset_bottom = 1920.0
 texture = ExtResource("1_d1gdj")
+stretch_mode = 6
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="Label" type="Label" parent="CanvasLayer"]
-offset_top = 948.0
-offset_right = 106.0
-offset_bottom = 971.0
-text = "oiugoiugougo"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
-anchors_preset = 15
+[node name="VidasContainer" type="HBoxContainer" parent="CanvasLayer"]
+anchors_preset = 1
+anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = -300.0
+offset_right = -20.0
+offset_bottom = 100.0
+grow_horizontal = 0
+alignment = 2
 
-[node name="Icons8-coração-48" type="Sprite2D" parent="CanvasLayer/HBoxContainer"]
-position = Vector2(1001.72, 67.4)
-scale = Vector2(2.715, 2.715)
+[node name="Vida1" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
 texture = ExtResource("2_jpdh3")
+expand_mode = 2
+stretch_mode = 5
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Vida2" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("2_jpdh3")
+expand_mode = 2
+stretch_mode = 5
 
-[node name="Icons8-moeda-48" type="Sprite2D" parent="CanvasLayer/HBoxContainer2"]
-position = Vector2(70, 69)
-scale = Vector2(2.715, 2.715)
+[node name="Vida3" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("2_jpdh3")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="Vida4" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("2_jpdh3")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="PontosContainer" type="HBoxContainer" parent="CanvasLayer"]
+offset_left = 20.0
+offset_right = 200.0
+offset_bottom = 100.0
+alignment = 0
+
+[node name="MoedaIcon" type="TextureRect" parent="CanvasLayer/PontosContainer"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
 texture = ExtResource("3_gbiob")
+expand_mode = 2
+stretch_mode = 5
 
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+[node name="LabelPontos" type="Label" parent="CanvasLayer/PontosContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 60
+text = "0"
+
+[node name="AreaJogo" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1080.0
+offset_bottom = 1700.0
+
+[node name="TimerSpawn" type="Timer" parent="."]
+one_shot = true
+
+[node name="CharacterBody2D" type="Area2D" parent="."]
+visible = false
+position = Vector2(252, 873)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
-position = Vector2(252, 873)
 shape = SubResource("CapsuleShape2D_gbiob")
 
 [node name="Unity-removebg-preview" type="Sprite2D" parent="CharacterBody2D"]
-position = Vector2(269.5, 900.75)
+position = Vector2(17.5, 27.75)
 scale = Vector2(0.621429, 0.661345)
 texture = ExtResource("4_jpdh3")
+
+[node name="AudioTiro" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_5iwor")
+
+[connection signal="timeout" from="TimerSpawn" to="." method="_on_timer_spawn_timeout"]
