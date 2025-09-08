@@ -1,45 +1,6 @@
-[gd_scene load_steps=9 format=3 uid="uid://c81ld0jrqbsf0"]
+[gd_scene load_steps=13 format=3 uid="uid://c81ld0jrqbsf0"]
 
-[ext_resource type="VideoStream" [node name="Button2" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -319.0
-offset_top = 243.0
-offset_right = 351.0
-offset_bottom = 452.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 71
-theme_override_styles/focus = SubResource("StyleBoxFlat_302cm")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_uvs0b")
-theme_override_styles/normal = SubResource("StyleBoxFlat_eg02k")
-text = "Tente Novamente
-"
-
-[node name="PontuacaoLabel" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -100.0
-offset_right = 300.0
-offset_bottom = -30.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 0.984314, 0, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 50
-text = "Pontuação: 0"
-horizontal_alignment = 1
-vertical_alignment = 18nu6" path="res://Assets/Videos/Game-Over.ogv" id="1_b48d2"]
+[ext_resource type="VideoStream" path="res://Assets/Videos/Game-Over.ogv" id="1_b48d2"]
 [ext_resource type="Script" path="res://Assets/Scripts/game_over.gd" id="1_kglmh"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b48d2"]
@@ -82,6 +43,26 @@ corner_radius_top_right = 59
 corner_radius_bottom_right = 59
 corner_radius_bottom_left = 59
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vb3s4"]
+bg_color = Color(0.164706, 0.537255, 0.537255, 1)
+corner_radius_top_left = 59
+corner_radius_top_right = 59
+corner_radius_bottom_right = 59
+corner_radius_bottom_left = 59
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8yn4s"]
+bg_color = Color(0.717647, 0.223529, 0.054902, 1)
+corner_radius_top_left = 59
+corner_radius_top_right = 59
+corner_radius_bottom_right = 59
+corner_radius_bottom_left = 59
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lw9ug"]
+corner_radius_top_left = 59
+corner_radius_top_right = 59
+corner_radius_bottom_right = 59
+corner_radius_bottom_left = 59
+
 [node name="GameOver" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -111,6 +92,27 @@ stream = ExtResource("1_b48d2")
 autoplay = true
 expand = true
 
+[node name="PontuacaoLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.984314, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 50
+text = "Pontuação: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="botao_tela_inicial" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -121,14 +123,14 @@ anchor_bottom = 0.5
 offset_left = -316.0
 offset_top = 1.0
 offset_right = 345.0
-offset_bottom = 207.0
+offset_bottom = 136.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 71
+theme_override_font_sizes/font_size = 50
 theme_override_styles/focus = SubResource("StyleBoxFlat_b48d2")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_scefk")
 theme_override_styles/normal = SubResource("StyleBoxFlat_7gjxu")
-text = "Voltar Tela Inicial"
+text = "Voltar ao Menu"
 
 [node name="botao_tentar_novamente" type="Button" parent="."]
 layout_mode = 1
@@ -137,15 +139,33 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -319.0
-offset_top = 243.0
-offset_right = 351.0
-offset_bottom = 452.0
+offset_left = -316.0
+offset_top = 151.0
+offset_right = 345.0
+offset_bottom = 286.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 71
+theme_override_font_sizes/font_size = 50
 theme_override_styles/focus = SubResource("StyleBoxFlat_302cm")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_uvs0b")
 theme_override_styles/normal = SubResource("StyleBoxFlat_eg02k")
-text = "Tente Novamente
-"
+text = "Tentar Novamente"
+
+[node name="botao_classificacao" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -316.0
+offset_top = 301.0
+offset_right = 345.0
+offset_bottom = 436.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 50
+theme_override_styles/focus = SubResource("StyleBoxFlat_vb3s4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_8yn4s")
+theme_override_styles/normal = SubResource("StyleBoxFlat_lw9ug")
+text = "Ver Classificação"
