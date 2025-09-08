@@ -1,8 +1,8 @@
 extends Control
 
-@onready var botao_voltar = $Panel/Button
-@onready var botao_som = $Panel/ChamarMenuSom
-@onready var botao_leaderboard = $Panel/ChamarMenuLeadboard
+@onready var botao_voltar = %BTVoltarMainMenu
+@onready var botao_som = %BTChamarMenuSom
+@onready var botao_leaderboard = %BTChamarMenuLeadboard
 
 func _ready():
 	# Conectar os sinais dos botões
@@ -17,4 +17,4 @@ func _on_botao_som_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/MenuSOM.tscn")
 	
 func _on_botao_leaderboard_pressed():
-	get_tree().change_scene_to_file("res://Assets/Scenes/Leaderboard_new.tscn")
+	get_tree().change_scene_to_file("res://Assets/Scenes/Leaderboard.tscn")

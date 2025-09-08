@@ -13,10 +13,15 @@ config_version=5
 config/name="Jogo Mobile"
 run/main_scene="uid://bxmlm1wuxs2e4"
 config/features=PackedStringArray("4.4", "Mobile")
+run/max_fps=120
 
 [autoload]
 
 AuthManager="*res://Assets/Scripts/AuthManager.gd"
+
+[debug]
+
+settings/stdout/print_gpu_profile=true
 
 [display]
 

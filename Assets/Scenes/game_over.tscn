@@ -1,7 +1,7 @@
-[gd_scene load_steps=13 format=3 uid="uid://c81ld0jrqbsf0"]
+[gd_scene load_steps=12 format=3 uid="uid://c81ld0jrqbsf0"]
 
-[ext_resource type="VideoStream" path="res://Assets/Videos/Game-Over.ogv" id="1_b48d2"]
-[ext_resource type="Script" path="res://Assets/Scripts/game_over.gd" id="1_kglmh"]
+[ext_resource type="VideoStream" uid="uid://ddrsfqxg8nu6" path="res://Assets/Videos/Game-Over.ogv" id="1_b48d2"]
+[ext_resource type="Script" uid="uid://b6m1k4y07p4kc" path="res://Assets/Scripts/game_over.gd" id="1_kglmh"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b48d2"]
 bg_color = Color(0.164171, 0.535851, 0.536876, 1)
@@ -82,6 +82,7 @@ grow_vertical = 2
 color = Color(0.0980392, 0.0980392, 0.0980392, 1)
 
 [node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -93,6 +94,7 @@ autoplay = true
 expand = true
 
 [node name="PontuacaoLabel" type="Label" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -114,6 +116,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="botao_tela_inicial" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -133,6 +136,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_7gjxu")
 text = "Voltar ao Menu"
 
 [node name="botao_tentar_novamente" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -152,6 +156,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_eg02k")
 text = "Tentar Novamente"
 
 [node name="botao_classificacao" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5

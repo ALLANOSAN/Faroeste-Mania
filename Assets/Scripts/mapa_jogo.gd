@@ -152,7 +152,10 @@ func game_over():
 	
 	# Salva a pontuação no Firebase se o usuário estiver logado
 	if auth_manager.is_logged_in():
+		print("Salvando pontuação de " + str(pontos) + " diretamente do mapa_jogo.gd...")
 		salvar_pontuacao(pontos)
+	else:
+		print("Usuário não logado, pontuação não salva no Firebase")
 	
 	# Vai para a tela de game over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
