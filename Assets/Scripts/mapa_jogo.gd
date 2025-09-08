@@ -9,6 +9,9 @@ var aumento_tempo = 0.1 # Quanto o tempo aumenta a cada acerto ou falha
 var alvo_ativo = false
 var tempo_restante = 0
 
+# Referência ao AuthManager
+@onready var auth_manager = get_node("/root/AuthManager")
+
 # Referências de nós
 @onready var alvo = $CharacterBody2D
 @onready var timer_spawn = $TimerSpawn
@@ -28,12 +31,20 @@ func _ready():
 	randomize()
 	atualizar_ui()
 	
-	# Conecta o sinal de input_event do alvo
-	alvo.input_event.connect(_on_alvo_input_event)
+	# Configurar o alvo para aceitar entrada
+	alvo.input_pickable = true
+	
+	# Conecta o sinal de input_event do alvo se não estiver conectado
+	if !alvo.input_event.is_connected(_on_alvo_input_event):
+		alvo.input_event.connect(_on_alvo_input_event)
+		print("Sinal input_event conectado ao alvo")
 	
 	# Inicia o primeiro spawn
 	timer_spawn.wait_time = tempo_spawn
 	timer_spawn.start()
+	
+	# Debug
+	print("MapaJogo inicializado, pronto para jogar!")
 
 func _process(delta):
 	if alvo_ativo:
@@ -73,23 +84,40 @@ func _on_timer_spawn_timeout():
 
 func _on_alvo_input_event(_viewport, event, _shape_idx):
 	if alvo_ativo and event is InputEventScreenTouch and event.pressed:
-		# Jogador tocou no alvo
-		pontos += 1
-		alvo_ativo = false
-		alvo.hide()
+		# Chama a função de acertar alvo
+		acertar_alvo()
+
+# Método alternativo para detecção de toques
+func _input(event):
+	if alvo_ativo and event is InputEventScreenTouch and event.pressed:
+		# Converte a posição do toque para coordenadas globais
+		var touch_position = event.position
 		
-		# Toca o som de tiro
-		audio_tiro.play()
-		
-		# Aumenta o tempo de spawn (torna o jogo mais lento a cada acerto)
-		tempo_spawn = min(max_tempo_spawn, tempo_spawn + aumento_tempo)
-		timer_spawn.wait_time = tempo_spawn
-		
-		# Prepara para o próximo spawn
-		timer_spawn.start()
-		atualizar_ui()
-		
-		print("Ponto marcado! Pontuação atual: ", pontos, " - Tempo de spawn: ", tempo_spawn)
+		# Verifica se o toque está dentro do alvo
+		if alvo.visible and alvo.get_node("CollisionShape2D").shape.get_rect().has_point(alvo.to_local(touch_position)):
+			print("Toque detectado diretamente na área do alvo")
+			acertar_alvo()
+			# Consuma o evento para evitar dupla detecção
+			get_viewport().set_input_as_handled()
+
+# Função comum para quando o jogador acerta o alvo
+func acertar_alvo():
+	pontos += 1
+	alvo_ativo = false
+	alvo.hide()
+	
+	# Toca o som de tiro
+	audio_tiro.play()
+	
+	# Aumenta o tempo de spawn (torna o jogo mais lento a cada acerto)
+	tempo_spawn = min(max_tempo_spawn, tempo_spawn + aumento_tempo)
+	timer_spawn.wait_time = tempo_spawn
+	
+	# Prepara para o próximo spawn
+	timer_spawn.start()
+	atualizar_ui()
+	
+	print("Ponto marcado! Pontuação atual: ", pontos, " - Tempo de spawn: ", tempo_spawn)
 
 func perder_vida():
 	vidas -= 1
@@ -123,43 +151,16 @@ func game_over():
 	save_game.store_line(JSON.stringify(jogo_data))
 	
 	# Salva a pontuação no Firebase se o usuário estiver logado
-	if AuthManager.is_logged_in():
-		salvar_pontuacao_firebase(pontos)
+	if auth_manager.is_logged_in():
+		salvar_pontuacao(pontos)
 	
 	# Vai para a tela de game over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
 
-func salvar_pontuacao_firebase(pontuacao):
-	# Verifica se o usuário está logado
-	var user_id = AuthManager.get_current_user_id()
-	if not user_id:
-		print("Usuário não está logado, não é possível salvar pontuação")
-		return
-		
-	# Cria um nó HTTPRequest para enviar os dados para o Firebase
-	var http_request = HTTPRequest.new()
-	add_child(http_request)
-	http_request.request_completed.connect(_on_pontuacao_salva)
-	
-	# Dados para salvar (pontuação, data, etc)
-	var data = {
-		"pontuacao": pontuacao,
-		"data": Time.get_datetime_string_from_system(),
-		"user_id": user_id
-	}
-	
-	# URL do Firebase Realtime Database
-	# URL específica do seu banco de dados Firebase
-	var firebase_db_url = "https://seu-projeto-default-rtdb.firebaseio.com" # Substitua esta URL pela que você copiou do console
-	var endpoint = "/pontuacoes/%s.json" % user_id
-	
-	# Para adicionar uma nova pontuação à lista de pontuações do usuário
-	# Você também pode usar .post() em vez de .put() se quiser manter um histórico
-	# de pontuações para cada usuário
-	http_request.request(firebase_db_url + endpoint, [], HTTPClient.METHOD_PUT, JSON.stringify(data))
-
-func _on_pontuacao_salva(result, response_code, _headers, _body):
-	if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
-		print("Pontuação salva com sucesso no Firebase!")
+# Salva a pontuação usando o AuthManager
+func salvar_pontuacao(pontuacao):
+	if auth_manager.is_logged_in():
+		print("Salvando pontuação de " + str(pontuacao) + " no Firebase...")
+		auth_manager.save_score(pontuacao)
 	else:
-		print("Erro ao salvar pontuação no Firebase. Código:", response_code)
+		print("Usuário não está logado, não é possível salvar pontuação")

@@ -1,90 +1,119 @@
 extends Control
 
-@onready var pontuacoes_container = $ScrollContainer/VBoxContainer
-@onready var http_request = $HTTPRequest
+@onready var auth_manager = get_node("/root/AuthManager")
+@onready var placar_container = $MargemPlacar/ScrollContainer/VBoxContainer
+@onready var loading_label = $MargemPlacar/LoadingLabel
 @onready var voltar_button = $BotaoVoltar
 
-# Template para item de pontuação
-const PONTUACAO_ITEM = """
-[center]%s - %s pontos (%s)[/center]
-"""
+# Referências para as texturas de medalhas
+@onready var medal_gold = preload("res://Assets/Art/medalhaouro.png")
+@onready var medal_silver = preload("res://Assets/Art/medalhaprata.png")
+@onready var medal_bronze = preload("res://Assets/Art/medalhabronze.png")
+@onready var background_texture = preload("res://Assets/Art/Sem título-1.png")
 
 func _ready():
+	# Conecta ao sinal de pontuações atualizadas
+	auth_manager.scores_updated.connect(_on_scores_updated)
+	
 	# Conecta botão de voltar
 	voltar_button.pressed.connect(_on_voltar_pressed)
 	
-	# Carrega pontuações do Firebase
-	carregar_pontuacoes()
+	# Carrega as pontuações
+	loading_label.text = "Carregando pontuações..."
+	auth_manager.load_scores()
 
 func _on_voltar_pressed():
-	get_tree().change_scene_to_file("res://Assets/Scenes/MenuOpções.tscn")
+	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
-func carregar_pontuacoes():
-	# URL do Firebase Realtime Database
-	# URL específica do seu banco de dados Firebase
-	var firebase_db_url = "https://seu-projeto-default-rtdb.firebaseio.com" # Substitua esta URL pela mesma que você usou no mapa_jogo.gd
-	var endpoint = "/pontuacoes.json"
+# Callback quando as pontuações forem atualizadas
+func _on_scores_updated(scores):
+	loading_label.hide()
 	
-	# Faz a requisição para buscar todas as pontuações
-	http_request.request_completed.connect(_on_pontuacoes_carregadas)
-	http_request.request(firebase_db_url + endpoint, [], HTTPClient.METHOD_GET)
-
-func _on_pontuacoes_carregadas(result, response_code, _headers, body):
-	if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
-		var json = JSON.new()
-		var parse_result = json.parse(body.get_string_from_utf8())
-		
-		if parse_result == OK:
-			var pontuacoes_data = json.data
-			exibir_pontuacoes(pontuacoes_data)
-		else:
-			print("Erro ao analisar dados JSON")
-	else:
-		print("Erro ao carregar pontuações. Código:", response_code)
-
-func exibir_pontuacoes(pontuacoes_data):
-	# Limpa os itens existentes
-	for child in pontuacoes_container.get_children():
-		child.queue_free()
-		
-	# Se não houver pontuações
-	if pontuacoes_data == null:
-		var label = RichTextLabel.new()
-		label.bbcode_enabled = true
-		label.fit_content = true
-		label.text = "[center]Nenhuma pontuação registrada ainda![/center]"
-		pontuacoes_container.add_child(label)
+	# Limpa o conteúdo atual, mas preserva os dois primeiros itens (cabeçalho e separador)
+	var children = placar_container.get_children()
+	for i in range(children.size()):
+		if i > 1: # Pula o cabeçalho (0) e o separador (1)
+			children[i].queue_free()
+	
+	# Se não tiver pontuações, mostra mensagem
+	if scores.size() == 0:
+		var label = Label.new()
+		label.text = "Nenhuma pontuação encontrada"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		placar_container.add_child(label)
 		return
-		
-	# Cria uma lista para organizar as pontuações
-	var lista_pontuacoes = []
 	
-	# Processa os dados
-	for user_id in pontuacoes_data.keys():
-		var pontuacao_info = pontuacoes_data[user_id]
-		lista_pontuacoes.append({
-			"user_id": user_id.substr(0, 8) + "...", # Trunca o ID para exibição
-			"pontuacao": pontuacao_info.pontuacao,
-			"data": pontuacao_info.data
-		})
+	# Adiciona as linhas de pontuação
+	for i in range(min(scores.size(), 10)): # Limita a 10 pontuações
+		add_score_row(i + 1, scores[i])
+
+# O método add_header_row foi removido pois o cabeçalho agora é parte permanente da cena
+
+# Adiciona uma linha de pontuação
+func add_score_row(pos_rank, score_data):
+	var row = HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Configura o espaçamento entre elementos
+	row.add_theme_constant_override("separation", 10)
 	
-	# Ordena por pontuação (maior primeiro)
-	lista_pontuacoes.sort_custom(func(a, b): return a.pontuacao > b.pontuacao)
+	# Posição (com medalha para os 3 primeiros)
+	var pos_container = HBoxContainer.new()
+	pos_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pos_container.size_flags_stretch_ratio = 0.8
+	pos_container.alignment = BoxContainer.ALIGNMENT_CENTER # Centralizar o conteúdo
 	
-	# Adiciona as pontuações ordenadas à UI
-	var posicao = 1
-	for info in lista_pontuacoes:
-		var label = RichTextLabel.new()
-		label.bbcode_enabled = true
-		label.fit_content = true
+	if pos_rank <= 3:
+		var medal_texture = TextureRect.new()
 		
-		# Formata o texto com posição, ID truncado, pontuação e data
-		var texto = PONTUACAO_ITEM % [
-			"%d. %s" % [posicao, info.user_id],
-			info.pontuacao,
-			info.data
-		]
+		# Escolhe a medalha correta
+		match pos_rank:
+			1: medal_texture.texture = medal_gold
+			2: medal_texture.texture = medal_silver
+			3: medal_texture.texture = medal_bronze
 		
-		label.text = texto
-		pontuacoes_container.add_child(label)
-		posicao += 1
+		medal_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		medal_texture.custom_minimum_size = Vector2(32, 32)
+		medal_texture.expand = true
+		pos_container.add_child(medal_texture)
+	else:
+		var pos_label = Label.new()
+		pos_label.text = str(pos_rank)
+		pos_label.add_theme_font_size_override("font_size", 22)
+		pos_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pos_label.add_theme_color_override("font_color", Color(1, 1, 1))
+		pos_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+		pos_label.add_theme_constant_override("outline_size", 2)
+		pos_container.add_child(pos_label)
+	
+	# Nome do jogador
+	var name_label = Label.new()
+	name_label.text = score_data.get("name", "???")
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_label.size_flags_stretch_ratio = 2.0
+	name_label.clip_text = true
+	name_label.add_theme_font_size_override("font_size", 22)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	name_label.add_theme_constant_override("outline_size", 2)
+	
+	# Pontuação
+	var score_label = Label.new()
+	score_label.text = str(score_data.get("score", 0))
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	score_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	score_label.add_theme_font_size_override("font_size", 22)
+	score_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	score_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	score_label.add_theme_constant_override("outline_size", 2)
+	
+	row.add_child(pos_container)
+	row.add_child(name_label)
+	row.add_child(score_label)
+	
+	placar_container.add_child(row)
+	
+	# Adiciona um pequeno espaço entre linhas
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 8)
+	placar_container.add_child(spacer)

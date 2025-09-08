@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://cs33efdbt36c1"]
 
 [ext_resource type="Texture2D" uid="uid://dqug3g25bsg5" path="res://Assets/Art/icons8-voltar-64.png" id="1_fo7ht"]
-[ext_resource type="Script" path="res://Assets/Scripts/menu_opcoes.gd" id="1_jkwpf"]
+[ext_resource type="Script" uid="uid://cw31hw42kgjey" path="res://Assets/Scripts/menu_opcoes.gd" id="1_jkwpf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0gabg"]
 bg_color = Color(1.15514e-06, 0.636828, 0.951158, 1)
@@ -31,7 +31,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_0gabg")
 
-[node name="Chamar Menu som" type="Button" parent="Panel"]
+[node name="ChamarMenuSom" type="Button" parent="Panel"]
 layout_mode = 0
 offset_left = 291.0
 offset_top = 798.0
@@ -42,7 +42,7 @@ theme_override_font_sizes/font_size = 85
 theme_override_styles/normal = SubResource("StyleBoxFlat_kfyjv")
 text = "SOM"
 
-[node name="Chamar Menu Leadboard" type="Button" parent="Panel"]
+[node name="ChamarMenuLeadboard" type="Button" parent="Panel"]
 layout_mode = 0
 offset_left = 291.0
 offset_top = 976.0

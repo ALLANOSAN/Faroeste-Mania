@@ -111,7 +111,7 @@ stream = ExtResource("1_b48d2")
 autoplay = true
 expand = true
 
-[node name="TelaInicial" type="Button" parent="."]
+[node name="botao_tela_inicial" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -130,7 +130,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_scefk")
 theme_override_styles/normal = SubResource("StyleBoxFlat_7gjxu")
 text = "Voltar Tela Inicial"
 
-[node name="Denovo" type="Button" parent="."]
+[node name="botao_tentar_novamente" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5

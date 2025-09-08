@@ -1,10 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://dd8mqc0uwusvk"]
+[gd_scene load_steps=5 format=3 uid="uid://dd8mqc0uwusvk"]
 
-[ext_resource type="Script" path="res://Assets/Scripts/leaderboard.gd" id="1_2vt20"]
+[ext_resource type="Script" uid="uid://c351x0shwel3l" path="res://Assets/Scripts/leaderboard.gd" id="1_2vt20"]
 [ext_resource type="Texture2D" uid="uid://dqug3g25bsg5" path="res://Assets/Art/icons8-voltar-64.png" id="2_po3na"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tq5kb"]
-bg_color = Color(0.164706, 0.537255, 0.537255, 1)
+[ext_resource type="Texture2D" uid="uid://cx37gryegxi5x" path="res://Assets/Art/Faroiest.jpg" id="3_0ib3v"]
+[ext_resource type="Texture2D" uid="uid://ta4lh6750cl" path="res://Assets/Art/Sem título-1.png" id="4_crh5b"]
 
 [node name="Leaderboard" type="Control"]
 layout_mode = 3
@@ -15,54 +14,150 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_2vt20")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_tq5kb")
+texture = ExtResource("3_0ib3v")
+expand_mode = 1
 
 [node name="Titulo" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 60.0
-offset_bottom = 147.0
+offset_top = 30.0
+offset_bottom = 110.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 60
-text = "Melhores Pontuações"
+text = "CLASSIFICAÇÃO"
 horizontal_alignment = 1
 
-[node name="BotaoVoltar" type="Button" parent="."]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 92.0
-offset_bottom = 92.0
-icon = ExtResource("2_po3na")
-flat = true
-expand_icon = true
+[node name="MargemPlacar" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -250.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="MolduraPlacar" type="TextureRect" parent="MargemPlacar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 60.0
-offset_top = 180.0
-offset_right = -60.0
-offset_bottom = -60.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("4_crh5b")
+expand_mode = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MargemPlacar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 70.0
+offset_top = 70.0
+offset_right = -70.0
+offset_bottom = -70.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MargemPlacar/ScrollContainer"]
+custom_minimum_size = Vector2(650, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="CabecalhoPermanente" type="HBoxContainer" parent="MargemPlacar/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="PosicaoLabel" type="Label" parent="MargemPlacar/ScrollContainer/VBoxContainer/CabecalhoPermanente"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.8
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Posição"
+horizontal_alignment = 1
+
+[node name="NomeLabel" type="Label" parent="MargemPlacar/ScrollContainer/VBoxContainer/CabecalhoPermanente"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Nome"
+horizontal_alignment = 1
+
+[node name="PontuacaoLabel" type="Label" parent="MargemPlacar/ScrollContainer/VBoxContainer/CabecalhoPermanente"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Pontuação"
+horizontal_alignment = 1
+
+[node name="Separador" type="HSeparator" parent="MargemPlacar/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LoadingLabel" type="Label" parent="MargemPlacar"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -30.0
+offset_right = 200.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "Carregando pontuações..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BotaoVoltar" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -100.0
+offset_right = 110.0
+offset_bottom = -20.0
+grow_vertical = 0
+icon = ExtResource("2_po3na")
+flat = true
+icon_alignment = 1
+expand_icon = true
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]

@@ -1,48 +1,38 @@
 extends Control
 
-var API_KEY = "AIzaSyCgzX43gWy7bGNHxqTC_TAHWeobJww2Il0"
-var base_url = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + API_KEY
+@onready var auth_manager = get_node("/root/AuthManager")
+@onready var feedback_text = $TextureRect/VBoxContainer/FeedbackText
 
-@onready var http_request = $HTTPRequest
+func _ready():
+	# Conectamos ao sinal de mudança no estado de autenticação
+	auth_manager.auth_state_changed.connect(_on_auth_state_changed)
 
 func _on_button_pressed() -> void:
-	var json_data = {
-		"email": $VBoxContainer/username.text,
-		"password": $VBoxContainer/password.text,
-		"returnSecureToken": true
-	}
+	var email = $TextureRect/VBoxContainer/username.text
+	var password = $TextureRect/VBoxContainer/password.text
 	
-	http_request.request(base_url, [], HTTPClient.METHOD_POST, JSON.stringify(json_data))
-
-
-func _on_http_request_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
-	# Primeiro, verifica o resultado da requisição em nível de rede
-	if result != HTTPRequest.RESULT_SUCCESS:
-		$VBoxContainer/FeedbackText.text = "Erro de conexão. Verifique sua internet."
+	# Validações básicas
+	if email.is_empty() or password.is_empty():
+		feedback_text.text = "Por favor, preencha email e senha"
 		return
+		
+	if password.length() < 6:
+		feedback_text.text = "A senha deve ter pelo menos 6 caracteres"
+		return
+		
+	if !email.contains("@") or !email.contains("."):
+		feedback_text.text = "Digite um email válido"
+		return
+	
+	feedback_text.text = "Registrando..."
+	auth_manager.register_with_email(email, password)
 
-	# Em seguida, analisa a resposta do servidor
-	var response_data = body.get_string_from_utf8()
-	var json_response = JSON.parse_string(response_data)
-	
-	if (response_code == 200):
-		# Se a resposta for bem-sucedida, navega para a tela de login
-		get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")
+func _on_auth_state_changed(is_logged_in):
+	if is_logged_in:
+		print("Registro realizado com sucesso:", auth_manager.get_current_user_id())
+		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 	else:
-		# Se a autenticação falhar, verifica o código do erro
-		if json_response and json_response.has("error") and json_response["error"].has("message"):
-			var error_message = json_response["error"]["message"]
-			match error_message:
-				"EMAIL_EXISTS":
-					$VBoxContainer/FeedbackText.text = "Este e-mail já está em uso."
-				"WEAK_PASSWORD : Password should be at least 6 characters":
-					$VBoxContainer/FeedbackText.text = "A senha deve ter pelo menos 6 caracteres."
-				"INVALID_EMAIL":
-					$VBoxContainer/FeedbackText.text = "O formato do e-mail é inválido."
-				_:
-					# Mensagem padrão para erros desconhecidos
-					$VBoxContainer/FeedbackText.text = "Erro no cadastro. Tente novamente."
-		else:
-			$VBoxContainer/FeedbackText.text = "Erro desconhecido. Tente novamente."
-	
-	print("Headers da resposta:", headers)
+		feedback_text.text = "Falha no registro. Este email pode já estar em uso."
+
+func _on_back_button_pressed():
+	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")

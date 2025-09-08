@@ -5,8 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://dswktv0mmhgtn" path="res://Assets/Art/ilustracao-em-vetor-revolver-vintage-remixada-da-arte-de-elizabeth-johnson.png" id="2_7w75u"]
 [ext_resource type="Texture2D" uid="uid://eiosej1lqcv7" path="res://Assets/Art/icons8-opções-50.png" id="3_wgp03"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wn5b6"]
-bg_color = Color(0.427317, 0.587217, 0.943763, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wgp03"]
+bg_color = Color(0.427451, 0.588235, 0.945098, 1)
 corner_radius_top_left = 59
 corner_radius_top_right = 59
 corner_radius_bottom_right = 59
@@ -62,7 +62,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_7w75u")
 
-[node name="Menu Principal" type="Panel" parent="."]
+[node name="MenuPrincipal" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -70,50 +70,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Fundo" type="TextureRect" parent="Menu Principal"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("1_wn5b6")
-
-[node name="Icone" type="TextureRect" parent="Menu Principal"]
-layout_mode = 0
-offset_left = 304.0
-offset_top = 147.0
-offset_right = 783.0
-offset_bottom = 600.0
-texture = ExtResource("2_7w75u")
-expand_mode = 1
-stretch_mode = 4
-
-[node name="GameTitle" type="Label" parent="Menu Principal"]
-layout_mode = 0
-offset_right = 1080.0
-offset_bottom = 1029.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 80
-text = "Faroeste Mania"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="BTLogin" type="Button" parent="Menu Principal"]
-layout_mode = 0
-offset_left = 334.0
-offset_top = 1170.0
-offset_right = 767.0
-offset_bottom = 1311.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 35
-theme_override_styles/focus = SubResource("StyleBoxFlat_wn5b6")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_7w75u")
-theme_override_styles/normal = SubResource("StyleBoxFlat_imcun")
-text = "Clique para fazer login"
-icon_alignment = 1
-
-[node name="BTOpcoes" type="Button" parent="Menu Principal"]
+[node name="MenuPrincipal#BTOpcoes" type="Button" parent="MenuPrincipal"]
 layout_mode = 0
 offset_left = 932.0
 offset_top = 38.0
@@ -123,7 +80,50 @@ scale = Vector2(2.135, 2.135)
 icon = ExtResource("3_wgp03")
 flat = true
 
-[node name="TextoAnimado" type="Label" parent="."]
+[node name="MenuPrincipal#Fundo" type="TextureRect" parent="MenuPrincipal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_wn5b6")
+
+[node name="MenuPrincipal#Icone" type="TextureRect" parent="MenuPrincipal"]
+layout_mode = 0
+offset_left = 304.0
+offset_top = 147.0
+offset_right = 783.0
+offset_bottom = 600.0
+texture = ExtResource("2_7w75u")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="MenuPrincipal#GameTitle" type="Label" parent="MenuPrincipal"]
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 1029.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 80
+text = "Faroeste Mania"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MenuPrincipal#BTLogin" type="Button" parent="MenuPrincipal"]
+layout_mode = 0
+offset_left = 334.0
+offset_top = 1170.0
+offset_right = 767.0
+offset_bottom = 1311.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/hover = SubResource("StyleBoxFlat_wgp03")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_7w75u")
+theme_override_styles/normal = SubResource("StyleBoxFlat_imcun")
+text = "Clique para fazer login"
+icon_alignment = 1
+
+[node name="TextoAnimado" type="Label" parent="MenuPrincipal"]
 layout_mode = 0
 offset_left = 204.0
 offset_top = 1556.0
@@ -132,7 +132,7 @@ offset_bottom = 1661.0
 text = "Clique para Entrar"
 label_settings = SubResource("LabelSettings_wn5b6")
 
-[node name="AnimaçãoTexto" type="AnimationPlayer" parent="TextoAnimado"]
+[node name="AnimacaoTexto" type="AnimationPlayer" parent="MenuPrincipal/TextoAnimado"]
 libraries = {
 &"": SubResource("AnimationLibrary_imcun")
 }
