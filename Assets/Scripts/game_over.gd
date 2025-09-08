@@ -73,7 +73,7 @@ func carregar_pontuacao_atual():
 				
 				# Atualiza a UI com a pontuação
 				if has_node("PontuacaoLabel"):
-					%PontuacaoLabel.text = "Pontuação: " + str(pontuacao_final)
+					%PontuacaoLabel.text = "Pontuação: %d" % pontuacao_final
 		else:
 			print("Erro ao analisar dados do jogo")
 	else:
