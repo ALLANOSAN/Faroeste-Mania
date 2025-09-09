@@ -15,6 +15,11 @@ run/main_scene="uid://bxmlm1wuxs2e4"
 config/features=PackedStringArray("4.4", "Mobile")
 run/max_fps=120
 
+[auth]
+
+user_id="iWYStFDUDUYMsT1AYHU6YJ9RAPg1"
+id_token="eyJhbGciOiJSUzI1NiIsImtpZCI6ImUzZWU3ZTAyOGUzODg1YTM0NWNlMDcwNTVmODQ2ODYyMjU1YTcwNDYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZmFyb2VzdGUtbWFuaWEiLCJhdWQiOiJmYXJvZXN0ZS1tYW5pYSIsImF1dGhfdGltZSI6MTc1NzM4NzEwMSwidXNlcl9pZCI6ImlXWVN0RkRVRFVZTXNUMUFZSFU2WUo5UkFQZzEiLCJzdWIiOiJpV1lTdEZEVURVWU1zVDFBWUhVNllKOVJBUGcxIiwiaWF0IjoxNzU3Mzg3MTAxLCJleHAiOjE3NTczOTA3MDEsImVtYWlsIjoiYWxsYW5zdHJ5cGVyQGxpdmUuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiYWxsYW5zdHJ5cGVyQGxpdmUuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.QjowceAfFTNrE9H_uUsrXGeeKm003ZxPt6yyj_H1U6pfI3DrsIex7nt8B56fkrzfns-lrwC0ZO5ryjOY-qq7NKofa_i7yyF2Tjfuydfj1evJGH6GotR3CB-FYvx6wswyWmfPfITDysOL-KXqa-2lTCUj-IYopsvUKAqydHWkVW2uAvoOwN_LqbM5y6aP-wP6T4OAn9WK-x-3FKwCtUaS85govFKQfImd2_-E5PCuDdNvEqlKK7wayBTvtrJVfUeJkhyvivZByg_ptYDwOMVmbuVyIv6LRLHxbotT8qDhXBbcp_5VahfKAxt0XLpuPzHNSlUgQ3kCQGk9DGNNuxfvyw"
+
 [autoload]
 
 AuthManager="*res://Assets/Scripts/AuthManager.gd"
@@ -22,14 +27,18 @@ AuthManager="*res://Assets/Scripts/AuthManager.gd"
 [debug]
 
 settings/stdout/print_gpu_profile=true
+gdscript/warnings/enable=true
+run/window_placement/screen=1
+settings/run/debug_window_placement/screen=1
 
 [display]
 
 window/size/viewport_width=1080
 window/size/viewport_height=1920
-window/size/mode=3
-window/size/initial_position_type=0
-window/size/borderless=true
+window/size/mode=0
+window/size/initial_position_type=2
+window/size/initial_position=Vector2i(100, 100)
+window/size/borderless=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep_height"
 window/handheld/orientation=1

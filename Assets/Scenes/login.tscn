@@ -32,12 +32,14 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="username" type="LineEdit" parent="TextureRect/VBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 placeholder_text = "Digite o nome de usuário"
 alignment = 1
 
 [node name="password" type="LineEdit" parent="TextureRect/VBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 placeholder_text = "Digite a senha"
@@ -45,11 +47,13 @@ alignment = 1
 secret = true
 
 [node name="login_button" type="Button" parent="TextureRect/VBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "Login"
 
 [node name="FeedbackText" type="Label" parent="TextureRect/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.863388, 0.355126, 0.0720554, 1)
 horizontal_alignment = 1
@@ -58,6 +62,7 @@ horizontal_alignment = 1
 layout_mode = 2
 
 [node name="signup_button" type="LinkButton" parent="TextureRect/VBoxContainer/CenterContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Sign Up"

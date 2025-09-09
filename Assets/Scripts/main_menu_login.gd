@@ -7,7 +7,7 @@ extends Control
 @onready var game_title = $"MenuPrincipal/MenuPrincipal#GameTitle"
 @onready var background = $"MenuPrincipal/MenuPrincipal#Fundo"
 @onready var auth_manager = get_node("/root/AuthManager")
-@onready var user_info_label = $UserInfoLabel
+@onready var user_info_label = $UserInfoLabel if has_node("UserInfoLabel") else null
 
 func _ready():
 	# Verificar se os nós estão disponíveis e imprimir mensagens de debug
