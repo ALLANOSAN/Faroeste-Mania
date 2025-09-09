@@ -14,7 +14,6 @@ var tempo_restante = 0
 
 # Referências de nós
 @onready var alvo = %CharacterBody2D
-@onready var timer_spawn = %TimerSpawn
 @onready var label_pontos = %LabelPontos
 @onready var vidas_container = %VidasContainer
 @onready var area_jogo = %AreaJogo # Área onde o alvo pode spawnar
@@ -39,9 +38,8 @@ func _ready():
 		alvo.input_event.connect(_on_alvo_input_event)
 		print("Sinal input_event conectado ao alvo")
 	
-	# Inicia o primeiro spawn
-	timer_spawn.wait_time = tempo_spawn
-	timer_spawn.start()
+	# Inicia o primeiro spawn diretamente
+	spawn_alvo()
 	
 	# Debug
 	print("MapaJogo inicializado, pronto para jogar!")
@@ -79,9 +77,6 @@ func spawn_alvo():
 	# Configura o tempo para este spawn
 	tempo_restante = tempo_spawn
 
-func _on_timer_spawn_timeout():
-	spawn_alvo()
-
 func _on_alvo_input_event(_viewport, event, _shape_idx):
 	if alvo_ativo and event is InputEventScreenTouch and event.pressed:
 		# Chama a função de acertar alvo
@@ -106,18 +101,17 @@ func acertar_alvo():
 	alvo_ativo = false
 	alvo.hide()
 	
-	# Toca o som de tiro
+	# Toca o som de tiro (não esperamos ele terminar)
 	audio_tiro.play()
 	
 	# Aumenta o tempo de spawn (torna o jogo mais lento a cada acerto)
 	tempo_spawn = min(max_tempo_spawn, tempo_spawn + aumento_tempo)
-	timer_spawn.wait_time = tempo_spawn
 	
-	# Prepara para o próximo spawn
-	timer_spawn.start()
+	# Prepara para o próximo spawn imediatamente
+	spawn_alvo()
 	atualizar_ui()
 	
-	print("Ponto marcado! Pontuação atual: ", pontos, " - Tempo de spawn: ", tempo_spawn)
+	print("Ponto marcado! Pontuação atual: %d - Tempo de spawn: %.2f" % [pontos, tempo_spawn])
 
 func perder_vida():
 	vidas -= 1
@@ -126,17 +120,16 @@ func perder_vida():
 	
 	# Aumenta o tempo de spawn também quando perde vida
 	tempo_spawn = min(max_tempo_spawn, tempo_spawn + aumento_tempo)
-	timer_spawn.wait_time = tempo_spawn
 	
 	if vidas <= 0:
 		# Game over
 		game_over()
 	else:
-		# Próximo spawn
-		timer_spawn.start()
+		# Próximo spawn imediato
+		spawn_alvo()
 		atualizar_ui()
 		
-		print("Vida perdida! Vidas restantes: ", vidas, " - Tempo de spawn: ", tempo_spawn)
+		print("Vida perdida! Vidas restantes: %d - Tempo de spawn: %.2f" % [vidas, tempo_spawn])
 
 func game_over():
 	print("Game Over! Pontuação final: ", pontos)

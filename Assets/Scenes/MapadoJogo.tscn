@@ -93,10 +93,6 @@ anchors_preset = 0
 offset_right = 1080.0
 offset_bottom = 1700.0
 
-[node name="TimerSpawn" type="Timer" parent="."]
-unique_name_in_owner = true
-one_shot = true
-
 [node name="CharacterBody2D" type="Area2D" parent="."]
 unique_name_in_owner = true
 visible = false
@@ -113,5 +109,3 @@ texture = ExtResource("4_jpdh3")
 [node name="AudioTiro" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("6_5iwor")
-
-[connection signal="timeout" from="TimerSpawn" to="." method="_on_timer_spawn_timeout"]

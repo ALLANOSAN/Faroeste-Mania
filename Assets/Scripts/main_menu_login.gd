@@ -38,10 +38,9 @@ func _update_ui_based_on_auth():
 	if auth_manager.is_logged_in():
 		print("Usuário logado! ID: " + auth_manager.get_current_user_id())
 		
-		# Mostra opções e texto piscando
+		# Esconde botão de login e mostra opções e texto piscando
 		if login_button != null:
-			login_button.text = "Sair" # Mudamos o texto do botão para "Sair"
-			login_button.show()
+			login_button.hide() # Escondemos o botão completamente
 		if options_menu_button != null:
 			options_menu_button.show()
 		if blinking_text != null:
