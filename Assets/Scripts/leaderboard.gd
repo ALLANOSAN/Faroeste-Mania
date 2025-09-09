@@ -1,9 +1,9 @@
 extends Control
 
 @onready var auth_manager = get_node("/root/AuthManager")
-@onready var placar_container = $MargemPlacar/ScrollContainer/VBoxContainer
-@onready var loading_label = $MargemPlacar/LoadingLabel
-@onready var voltar_button = $BotaoVoltar
+@onready var placar_container = %VBoxContainer
+@onready var loading_label = %LoadingLabel
+@onready var voltar_button = %BotaoVoltar
 
 # Referências para as texturas de medalhas
 @onready var medal_gold = preload("res://Assets/Art/medalhaouro.png")

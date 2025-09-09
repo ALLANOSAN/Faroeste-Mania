@@ -13,17 +13,17 @@ var tempo_restante = 0
 @onready var auth_manager = get_node("/root/AuthManager")
 
 # Referências de nós
-@onready var alvo = $CharacterBody2D
-@onready var timer_spawn = $TimerSpawn
-@onready var label_pontos = $CanvasLayer/PontosContainer/LabelPontos
-@onready var vidas_container = $CanvasLayer/VidasContainer
-@onready var area_jogo = $AreaJogo # Área onde o alvo pode spawnar
-@onready var audio_tiro = $AudioTiro
+@onready var alvo = %CharacterBody2D
+@onready var timer_spawn = %TimerSpawn
+@onready var label_pontos = %LabelPontos
+@onready var vidas_container = %VidasContainer
+@onready var area_jogo = %AreaJogo # Área onde o alvo pode spawnar
+@onready var audio_tiro = %AudioTiro
 @onready var vidas_sprites = [
-	$CanvasLayer/VidasContainer/Vida1,
-	$CanvasLayer/VidasContainer/Vida2,
-	$CanvasLayer/VidasContainer/Vida3,
-	$CanvasLayer/VidasContainer/Vida4
+	%Vida1,
+	%Vida2,
+	%Vida3,
+	%Vida4
 ]
 
 func _ready():
@@ -152,7 +152,7 @@ func game_over():
 	
 	# Salva a pontuação no Firebase se o usuário estiver logado
 	if auth_manager.is_logged_in():
-		print("Salvando pontuação de " + str(pontos) + " diretamente do mapa_jogo.gd...")
+		print("Salvando pontuação de %d diretamente do mapa_jogo.gd..." % pontos)
 		salvar_pontuacao(pontos)
 	else:
 		print("Usuário não logado, pontuação não salva no Firebase")
@@ -163,7 +163,7 @@ func game_over():
 # Salva a pontuação usando o AuthManager
 func salvar_pontuacao(pontuacao):
 	if auth_manager.is_logged_in():
-		print("Salvando pontuação de " + str(pontuacao) + " no Firebase...")
+		print("Salvando pontuação de %d no Firebase..." % pontuacao)
 		auth_manager.save_score(pontuacao)
 	else:
 		print("Usuário não está logado, não é possível salvar pontuação")

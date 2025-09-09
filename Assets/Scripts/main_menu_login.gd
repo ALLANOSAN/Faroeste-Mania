@@ -1,13 +1,13 @@
 extends Control
 
-@onready var login_button = $"MenuPrincipal/MenuPrincipal#BTLogin"
-@onready var options_menu_button = $"MenuPrincipal/MenuPrincipal#BTOpcoes"
-@onready var blinking_text = $MenuPrincipal/TextoAnimado
-@onready var animation_player = $MenuPrincipal/TextoAnimado/AnimacaoTexto
-@onready var game_title = $"MenuPrincipal/MenuPrincipal#GameTitle"
-@onready var background = $"MenuPrincipal/MenuPrincipal#Fundo"
+@onready var login_button = %"MenuPrincipal#BTLogin"
+@onready var options_menu_button = %"MenuPrincipal#BTOpcoes"
+@onready var blinking_text = %TextoAnimado
+@onready var animation_player = %AnimacaoTexto
+@onready var game_title = %"MenuPrincipal#GameTitle"
+@onready var background = %"MenuPrincipal#Fundo"
 @onready var auth_manager = get_node("/root/AuthManager")
-@onready var user_info_label = $UserInfoLabel if has_node("UserInfoLabel") else null
+@onready var user_info_label = %UserInfoLabel if has_node("UserInfoLabel") else null
 
 func _ready():
 	# Verificar se os nós estão disponíveis e imprimir mensagens de debug

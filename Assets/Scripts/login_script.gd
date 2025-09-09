@@ -2,7 +2,7 @@ extends Control
 
 @onready var auth_manager = get_node("/root/AuthManager")
 @onready var feedback_text = %FeedbackText
-@onready var http_request = $HTTPRequest if has_node("HTTPRequest") else null
+@onready var http_request = %HTTPRequest if has_node("HTTPRequest") else null
 
 func _ready():
 	# Conectamos ao sinal de mudança no estado de autenticação

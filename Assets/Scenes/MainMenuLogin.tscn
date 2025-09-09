@@ -71,6 +71,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MenuPrincipal#BTOpcoes" type="Button" parent="MenuPrincipal"]
+unique_name_in_owner = true
 layout_mode = 0
 offset_left = 932.0
 offset_top = 38.0
@@ -81,6 +82,7 @@ icon = ExtResource("3_wgp03")
 flat = true
 
 [node name="MenuPrincipal#Fundo" type="TextureRect" parent="MenuPrincipal"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -90,6 +92,7 @@ grow_vertical = 2
 texture = ExtResource("1_wn5b6")
 
 [node name="MenuPrincipal#Icone" type="TextureRect" parent="MenuPrincipal"]
+unique_name_in_owner = true
 layout_mode = 0
 offset_left = 304.0
 offset_top = 147.0
@@ -100,6 +103,7 @@ expand_mode = 1
 stretch_mode = 4
 
 [node name="MenuPrincipal#GameTitle" type="Label" parent="MenuPrincipal"]
+unique_name_in_owner = true
 layout_mode = 0
 offset_right = 1080.0
 offset_bottom = 1029.0
@@ -110,6 +114,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="MenuPrincipal#BTLogin" type="Button" parent="MenuPrincipal"]
+unique_name_in_owner = true
 layout_mode = 0
 offset_left = 334.0
 offset_top = 1170.0
@@ -124,6 +129,7 @@ text = "Clique para fazer login"
 icon_alignment = 1
 
 [node name="TextoAnimado" type="Label" parent="MenuPrincipal"]
+unique_name_in_owner = true
 layout_mode = 0
 offset_left = 204.0
 offset_top = 1556.0
@@ -133,6 +139,7 @@ text = "Clique para Entrar"
 label_settings = SubResource("LabelSettings_wn5b6")
 
 [node name="AnimacaoTexto" type="AnimationPlayer" parent="MenuPrincipal/TextoAnimado"]
+unique_name_in_owner = true
 libraries = {
 &"": SubResource("AnimationLibrary_imcun")
 }

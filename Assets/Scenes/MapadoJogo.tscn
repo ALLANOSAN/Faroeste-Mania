@@ -23,6 +23,7 @@ stretch_mode = 6
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="VidasContainer" type="HBoxContainer" parent="CanvasLayer"]
+unique_name_in_owner = true
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -33,6 +34,7 @@ grow_horizontal = 0
 alignment = 2
 
 [node name="Vida1" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
 texture = ExtResource("2_jpdh3")
@@ -40,6 +42,7 @@ expand_mode = 2
 stretch_mode = 5
 
 [node name="Vida2" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
 texture = ExtResource("2_jpdh3")
@@ -47,6 +50,7 @@ expand_mode = 2
 stretch_mode = 5
 
 [node name="Vida3" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
 texture = ExtResource("2_jpdh3")
@@ -54,6 +58,7 @@ expand_mode = 2
 stretch_mode = 5
 
 [node name="Vida4" type="TextureRect" parent="CanvasLayer/VidasContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
 texture = ExtResource("2_jpdh3")
@@ -73,6 +78,7 @@ expand_mode = 2
 stretch_mode = 5
 
 [node name="LabelPontos" type="Label" parent="CanvasLayer/PontosContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -81,15 +87,18 @@ theme_override_font_sizes/font_size = 60
 text = "0"
 
 [node name="AreaJogo" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1080.0
 offset_bottom = 1700.0
 
 [node name="TimerSpawn" type="Timer" parent="."]
+unique_name_in_owner = true
 one_shot = true
 
 [node name="CharacterBody2D" type="Area2D" parent="."]
+unique_name_in_owner = true
 visible = false
 position = Vector2(252, 873)
 
@@ -102,6 +111,7 @@ scale = Vector2(0.621429, 0.661345)
 texture = ExtResource("4_jpdh3")
 
 [node name="AudioTiro" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
 stream = ExtResource("6_5iwor")
 
 [connection signal="timeout" from="TimerSpawn" to="." method="_on_timer_spawn_timeout"]
