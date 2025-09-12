@@ -43,9 +43,14 @@ func _on_scores_updated(scores):
 		placar_container.add_child(label)
 		return
 	
+	# Garantir que temos apenas as 10 melhores pontuações
+	var top_scores = []
+	for i in range(min(scores.size(), 10)):
+		top_scores.append(scores[i])
+	
 	# Adiciona as linhas de pontuação
-	for i in range(min(scores.size(), 10)): # Limita a 10 pontuações
-		add_score_row(i + 1, scores[i])
+	for i in range(top_scores.size()): 
+		add_score_row(i + 1, top_scores[i])
 
 # O método add_header_row foi removido pois o cabeçalho agora é parte permanente da cena
 

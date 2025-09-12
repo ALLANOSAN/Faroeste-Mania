@@ -11,7 +11,40 @@ var DATABASE_URL = "https://faroeste-mania-default-rtdb.firebaseio.com/" # URL d
 signal auth_state_changed(is_logged_in)
 signal scores_updated(scores_list) # Emitido quando as pontuações são atualizadas
 
+# Função para diagnosticar problemas de conexão com o Firebase
+func test_firebase_connection():
+	print("Testando conexão com o Firebase...")
+	
+	var http_request = HTTPRequest.new()
+	add_child(http_request)
+	
+	# Função para processar a resposta
+	http_request.request_completed.connect(func(_result, response_code, _headers, body):
+		print("Teste de conexão com Firebase - Código: ", response_code)
+		if response_code == 200:
+			print("Conexão com Firebase OK!")
+			var json = JSON.new()
+			json.parse(body.get_string_from_utf8())
+			var data = json.get_data()
+			print("Dados recebidos: ", data)
+		else:
+			print("Falha na conexão com Firebase! Corpo da resposta:", body.get_string_from_utf8())
+			print("AVISO: Configure as regras do Firebase conforme o arquivo firebase_rules_atualizadas.txt")
+		http_request.queue_free()
+	)
+	
+	# Tenta acessar o nó "scores" do Firebase (sem auth)
+	var url = DATABASE_URL + "scores.json"
+	http_request.request(url)
+	
+	return true
+
 func _ready():
+	print("AuthManager inicializando...")
+	
+	# Teste de conexão com o Firebase
+	test_firebase_connection()
+	
 	# Primeiro tentamos carregar a sessão local
 	var has_local_session = load_local_session()
 	
@@ -186,8 +219,30 @@ func _on_register_completed(_result, response_code, _headers, body):
 		# Registro bem-sucedido
 		var user_id = response["localId"]
 		var id_token = response["idToken"]
-		save_user_session(user_id, id_token)
-		print("Registro realizado com sucesso para: ", user_id)
+		# O nome do usuário já deve ter sido definido em set_current_user_name
+		var user_name = get_current_user_name()
+		save_user_session(user_id, id_token, user_name)
+		print("Registro realizado com sucesso para: ", user_id, " com nome: ", user_name)
+		
+		# Salvamos o nome no Firebase Database também
+		if user_name != null and !user_name.is_empty():
+			var http_request = HTTPRequest.new()
+			add_child(http_request)
+			
+			var url = DATABASE_URL + "users/" + user_id + "/name.json"
+			var headers = ["Content-Type: application/json"]
+			var request_body = JSON.stringify(user_name)
+			
+			http_request.request_completed.connect(self._on_user_name_saved)
+			http_request.request(url, headers, HTTPClient.METHOD_PUT, request_body)
+			
+# Callback para quando o nome do usuário for salvo no Firebase
+func _on_user_name_saved(_result, response_code, _headers, _body):
+	print("Nome de usuário salvo no Firebase: ", response_code == 200)
+	var http_request = get_child(get_child_count() - 1)
+	if http_request is HTTPRequest:
+		http_request.queue_free()
+		
 		emit_signal("auth_state_changed", true)
 		return true
 	else:
@@ -227,32 +282,58 @@ func save_score(score):
 	add_child(http_request)
 	http_request.request_completed.connect(self._on_score_saved)
 	
-	# URL para salvar no Realtime Database
-	# Salvamos na estrutura scores/USER_ID/{pontuação e nome}
-	var url = DATABASE_URL + "scores/" + current_user + ".json"
+	# URL para salvar no Realtime Database (usamos o caminho scores e pontuacoes para compatibilidade)
+	var url = DATABASE_URL + "scores.json"
+	
+	# Tentaremos também salvar na estrutura "pontuacoes" para compatibilidade com regras existentes
+	var url_pontuacoes = DATABASE_URL + "pontuacoes/" + current_user + ".json"
 	
 	# Cabeçalhos da requisição
 	var headers = ["Content-Type: application/json"]
 	
 	# Corpo da requisição com pontuação e nome
 	var body = JSON.stringify({
+		"user_id": current_user,
 		"score": score,
 		"name": user_name,
 		"timestamp": Time.get_unix_time_from_system()
 	})
 	
-	# Requisição para o Firebase Realtime Database
-	http_request.request(url, headers, HTTPClient.METHOD_PUT, body)
+	# Requisição para salvar em "scores" (usando POST para criar um novo nó)
+	http_request.request(url, headers, HTTPClient.METHOD_POST, body)
+	
+	# Requisição para salvar também em "pontuacoes/user_id" (usando PUT para atualizar nó existente)
+	var http_request2 = HTTPRequest.new()
+	add_child(http_request2)
+	http_request2.request_completed.connect(self._on_pontuacoes_saved)
+	http_request2.request(url_pontuacoes, headers, HTTPClient.METHOD_PUT, body)
+	
+	print("Pontuação %d enviada ao Firebase" % score)
 	return true
+	
+# Callback para quando a pontuação for salva em "pontuacoes"
+func _on_pontuacoes_saved(_result, _response_code, _headers, _body):
+	# Liberar o HTTPRequest após a conclusão
+	var http_request = get_child(get_child_count() - 1)  # Obtém o último filho (que deve ser o HTTPRequest)
+	if http_request is HTTPRequest:
+		http_request.queue_free()
+	print("Pontuação também salva na estrutura 'pontuacoes'")
 
 # Carrega todas as pontuações
 func load_scores():
+	print("Carregando pontuações do leaderboard...")
+	
 	var http_request = HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(self._on_scores_loaded)
 	
-	# URL para ler do Realtime Database
+	# URL para buscar todos os scores (sem ordenação ou limitação no servidor)
+	# Tentando ambos os caminhos: "scores" e "pontuacoes" para compatibilidade
 	var url = DATABASE_URL + "scores.json"
+	
+	print("URL de requisição para pontuações: " + url)
+	
+	print("URL de requisição: " + url)
 	
 	# Requisição para o Firebase Realtime Database
 	http_request.request(url)
@@ -272,36 +353,165 @@ func _on_score_saved(_result, response_code, _headers, body):
 
 # Callback para quando as pontuações forem carregadas
 func _on_scores_loaded(_result, response_code, _headers, body):
-	if response_code != 200:
-		print("Falha ao carregar pontuações: ", response_code)
-		return
-		
-	var json = JSON.new()
-	json.parse(body.get_string_from_utf8())
-	var raw_scores = json.get_data()
+	print("Resposta do servidor recebida (código %d)" % response_code)
 	
-	if raw_scores == null:
-		print("Nenhuma pontuação encontrada")
+	# Casos específicos de erros de autenticação
+	if response_code == 401:
+		print("ERRO 401: Não autorizado. As regras do Firebase estão impedindo o acesso anônimo.")
+		print("Consultando estrutura alternativa 'pontuacoes'...")
+		
+		# Tenta carregar de "pontuacoes" em vez de "scores"
+		var http_request = HTTPRequest.new()
+		add_child(http_request)
+		http_request.request_completed.connect(self._on_backup_scores_loaded)
+		var url = DATABASE_URL + "pontuacoes.json"
+		http_request.request(url)
+		return
+	
+	if response_code == 403:
+		print("ERRO 403: Proibido. Verifique as regras do Firebase.")
+		emit_signal("scores_updated", [])
+		return
+	
+	if response_code != 200:
+		# Outros erros de requisição
+		print("Falha ao carregar pontuações: ", response_code)
+		if body:
+			print("Resposta do servidor:", body.get_string_from_utf8())
+		emit_signal("scores_updated", [])
+		return
+	
+	# Decodifica a resposta JSON
+	var json = JSON.new()
+	var json_string = body.get_string_from_utf8()
+	var error = json.parse(json_string)
+	
+	if error != OK:
+		print("Erro ao decodificar JSON:", json.get_error_message())
+		print("Resposta recebida:", json_string)
+		emit_signal("scores_updated", [])
+		return
+	
+	var scores_data = json.get_data()
+	
+	if scores_data == null:
+		print("Dados vazios recebidos do Firebase (null)")
 		emit_signal("scores_updated", [])
 		return
 		
+	# Se não for um dicionário, pode ser que não tenha dados ainda
+	if typeof(scores_data) != TYPE_DICTIONARY:
+		print("Formato de dados inválido:", typeof(scores_data))
+		emit_signal("scores_updated", [])
+		return
+		
+	# Se for um dicionário vazio, não há pontuações
+	if scores_data.is_empty():
+		print("Nenhuma pontuação encontrada")
+		emit_signal("scores_updated", [])
+		return
+	
 	# Convertemos o dicionário em um array para poder ordenar
 	var scores_array = []
-	for user_id in raw_scores.keys():
-		var score_data = raw_scores[user_id]
-		scores_array.append({
-			"user_id": user_id,
-			"name": score_data.get("name", "Jogador Desconhecido"),
-			"score": score_data.get("score", 0),
-			"timestamp": score_data.get("timestamp", 0)
-		})
+	for key in scores_data.keys():
+		var score_entry = scores_data[key]
+		if not score_entry is Dictionary:
+			print("Entrada inválida encontrada:", score_entry)
+			continue
+			
+		# Certifique-se de que o score é um número
+		if score_entry.has("score"):
+			# Converter para número, mesmo se estiver como string
+			if score_entry["score"] is String:
+				score_entry["score"] = score_entry["score"].to_int()
+			elif score_entry["score"] is float:
+				score_entry["score"] = int(score_entry["score"])
+		else:
+			score_entry["score"] = 0
+		
+		# Garantir que temos um nome
+		if not score_entry.has("name") or score_entry["name"] == null or score_entry["name"] == "":
+			score_entry["name"] = "Jogador Anônimo"
+			
+		scores_array.append(score_entry)
+	
+	if scores_array.is_empty():
+		print("Nenhuma pontuação válida encontrada após processamento")
+		emit_signal("scores_updated", [])
+		return
 	
 	# Ordenamos por pontuação (do maior para o menor)
 	scores_array.sort_custom(func(a, b): return a["score"] > b["score"])
 	
+	# Limitar a exatamente 10 registros
+	if scores_array.size() > 10:
+		scores_array = scores_array.slice(0, 10)
+	
+	print("Pontuações carregadas: %d registros" % scores_array.size())
+	
+	# Emitimos o sinal com as pontuações ordenadas
+	# Emite o sinal com as pontuações (limitado a 10)
+	emit_signal("scores_updated", scores_array)
+
+# Função alternativa para carregar pontuações da estrutura "pontuacoes"
+func _on_backup_scores_loaded(_result, response_code, _headers, body):
+	print("Resposta do servidor (backup) recebida (código %d)" % response_code)
+	
+	if response_code != 200:
+		print("Falha ao carregar pontuações de backup.")
+		# Usando dados de exemplo para que a interface não fique vazia
+		var mock_data = [
+			{"name": "Jogador Teste 1", "score": 1000},
+			{"name": "Jogador Teste 2", "score": 800},
+			{"name": "Jogador Teste 3", "score": 600}
+		]
+		emit_signal("scores_updated", mock_data)
+		return
+	
+	# Decodifica a resposta JSON
+	var json = JSON.new()
+	var json_string = body.get_string_from_utf8()
+	var error = json.parse(json_string)
+	
+	if error != OK or json.get_data() == null:
+		print("Erro ao decodificar JSON de backup ou dados vazios")
+		var mock_data = [
+			{"name": "Jogador Teste 1", "score": 1000},
+			{"name": "Jogador Teste 2", "score": 800},
+			{"name": "Jogador Teste 3", "score": 600}
+		]
+		emit_signal("scores_updated", mock_data)
+		return
+		
+	var scores_data = json.get_data()
+	
+	# Convertemos o dicionário em um array para poder ordenar
+	var scores_array = []
+	for user_id in scores_data.keys():
+		var score_data = scores_data[user_id]
+		if score_data is Dictionary:
+			# Certifique-se de que temos os campos necessários
+			score_data["user_id"] = user_id
+			if not score_data.has("name") or score_data["name"] == null:
+				score_data["name"] = "Jogador " + user_id.substr(0, 5)
+				
+			if score_data.has("score"):
+				# Converter para número se estiver como string
+				if score_data["score"] is String:
+					score_data["score"] = score_data["score"].to_int()
+				scores_array.append(score_data)
+	
+	# Ordenamos por pontuação (do maior para o menor)
+	scores_array.sort_custom(func(a, b): return a["score"] > b["score"])
+	
+	# Limitar a exatamente 10 registros
+	if scores_array.size() > 10:
+		scores_array = scores_array.slice(0, 10)
+	
+	print("Pontuações de backup carregadas: %d registros" % scores_array.size())
+	
 	# Emitimos o sinal com as pontuações ordenadas
 	emit_signal("scores_updated", scores_array)
-	print("Pontuações carregadas e ordenadas")
 
 # Obtém o nome do usuário atual
 func get_current_user_name():

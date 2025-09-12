@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dd8mqc0uwusvk"]
+[gd_scene load_steps=5 format=3 uid="uid://dyu6231xtuwwl"]
 
 [ext_resource type="Script" uid="uid://c351x0shwel3l" path="res://Assets/Scripts/leaderboard.gd" id="1_2vt20"]
 [ext_resource type="Texture2D" uid="uid://dqug3g25bsg5" path="res://Assets/Art/icons8-voltar-64.png" id="2_po3na"]
