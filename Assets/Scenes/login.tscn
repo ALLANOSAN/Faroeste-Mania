@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://1qrujsd8dpqj"]
+[gd_scene load_steps=3 format=3 uid="uid://d3vr1ww3o1jns"]
 
 [ext_resource type="Texture2D" uid="uid://ccuqvqrqoy3bc" path="res://Assets/Art/Tela inicial do jogo mobile png.png" id="1_1503t"]
 [ext_resource type="Script" uid="uid://0repr8skag47" path="res://Assets/Scripts/login_script.gd" id="1_w36li"]

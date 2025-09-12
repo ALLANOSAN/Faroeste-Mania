@@ -33,12 +33,10 @@ func _ready():
 	ajustar_video_tela_cheia()
 
 func ajustar_video_tela_cheia():
-	# Obtém o tamanho da tela
-	var screen_size = get_viewport_rect().size
-	
-	# Ajusta o tamanho do player de vídeo para cobrir a tela
-	video_player.size = screen_size
-	video_player.position = Vector2.ZERO
+	# Como o VideoPlayer já tem anchors = (0, 0, 1, 1), ele já está configurado para preencher toda a tela
+	# Não precisamos definir o tamanho manualmente, pois os anchors já fazem isso
+	# Removendo a definição de tamanho que estava causando o aviso
+	pass
 
 func _on_video_finished():
 	print("Vídeo finalizado, mostrando botões")

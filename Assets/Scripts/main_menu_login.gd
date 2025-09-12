@@ -95,7 +95,10 @@ func _on_options_menu_button_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/MenuOpções.tscn")
 	
 # Função para lidar com cliques na tela quando logado
+# Atualizada para aceitar tanto toques de tela quanto cliques de mouse
 func _on_background_gui_input(event):
-	if auth_manager.is_logged_in() and event is InputEventScreenTouch and event.pressed:
-		get_tree().change_scene_to_file("res://Assets/Scenes/MapadoJogo.tscn")
-		print("Indo para o mapa do jogo...")
+	if auth_manager.is_logged_in():
+		# Verifica se é um toque de tela (para dispositivos móveis) ou um clique de mouse (para PC)
+		if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+			get_tree().change_scene_to_file("res://Assets/Scenes/MapadoJogo.tscn")
+			print("Indo para o mapa do jogo...")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://c81ld0jrqbsf0"]
+[gd_scene load_steps=12 format=3 uid="uid://dy4gp44imt7bl"]
 
 [ext_resource type="VideoStream" uid="uid://ddrsfqxg8nu6" path="res://Assets/Videos/Game-Over.ogv" id="1_b48d2"]
 [ext_resource type="Script" uid="uid://b6m1k4y07p4kc" path="res://Assets/Scripts/game_over.gd" id="1_kglmh"]
