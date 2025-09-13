@@ -235,24 +235,35 @@ func _on_register_completed(_result, response_code, _headers, body):
 			
 			http_request.request_completed.connect(self._on_user_name_saved)
 			http_request.request(url, headers, HTTPClient.METHOD_PUT, request_body)
-			
+
 # Callback para quando o nome do usuário for salvo no Firebase
-func _on_user_name_saved(_result, response_code, _headers, _body):
-	print("Nome de usuário salvo no Firebase: ", response_code == 200)
+func _on_user_name_saved(_result, response_code, _headers, body):
+	# Libera a requisição HTTP, já que o trabalho dela terminou
 	var http_request = get_child(get_child_count() - 1)
 	if http_request is HTTPRequest:
 		http_request.queue_free()
-		
+	
+	if response_code == 200:
+		print("Nome de usuário salvo com sucesso no Firebase.")
+		# Emite o sinal de autenticação, confirmando que a sessão está ativa
 		emit_signal("auth_state_changed", true)
-		return true
 	else:
-		# Falha no registro
-		var error_message = "Erro no registro"
-		if response.has("error"):
-			error_message = response["error"]["message"]
-		print("Falha no registro: ", error_message)
-		emit_signal("auth_state_changed", false)
-		return false
+		# Se o código de resposta for diferente de 200, ocorreu um erro.
+		print("Falha ao salvar nome de usuário no Firebase! Código: ", response_code)
+		# Tenta decodificar a mensagem de erro do Firebase, se houver.
+		var json = JSON.new()
+		var error_message = "Erro desconhecido"
+		
+		var parse_error = json.parse(body.get_string_from_utf8())
+		if parse_error == OK:
+			var response = json.get_data()
+			if response is Dictionary and response.has("error") and response["error"] is Dictionary and response["error"].has("message"):
+				error_message = response["error"]["message"]
+		
+		print("Detalhes do erro: ", error_message)
+		# A emissão do sinal com "false" aqui pode ser opcional. Se o registro já foi bem-sucedido,
+		# talvez não queiramos deslogar o usuário apenas porque o nome falhou ao salvar.
+		# Apenas um aviso pode ser suficiente.
 
 func get_current_user_id():
 	return current_user
