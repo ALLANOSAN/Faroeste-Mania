@@ -43,6 +43,11 @@ func _ready():
 		alvo.input_event.connect(_on_alvo_input_event)
 		print("Sinal input_event conectado ao alvo")
 	
+	# Verifica se o jogador está logado para mostrar informações
+	if auth_manager.is_user_logged_in():
+		print("Jogador logado: " + auth_manager.get_current_user_id())
+		print("Pontuação máxima atual: " + str(auth_manager.get_player_high_score()))
+	
 	# Inicia o primeiro spawn diretamente
 	spawn_alvo()
 	
@@ -154,11 +159,15 @@ func acertar_alvo():
 	# Ajusta a dificuldade com base na pontuação atual
 	ajustar_dificuldade()
 	
+	# Atualiza a pontuação máxima local
+	if auth_manager.is_user_logged_in() and pontos > auth_manager.get_player_high_score():
+		auth_manager.player_high_score = pontos
+	
 	# Prepara para o próximo spawn imediatamente
 	spawn_alvo()
 	atualizar_ui()
 	
-	print("Ponto marcado! Pontuação: %d, Combo: %d, Pontos ganhos: %d - Tempo: %.2f" % 
+	print("Ponto marcado! Pontuação: %d, Combo: %d, Pontos ganhos: %d - Tempo: %.2f" %
 		[pontos, combo, pontos_ganhos, tempo_spawn])
 
 # Função para ajustar a dificuldade com base na pontuação
@@ -206,20 +215,20 @@ func game_over():
 	var save_game = FileAccess.open("user://temp_game_data.save", FileAccess.WRITE)
 	save_game.store_line(JSON.stringify(jogo_data))
 	
-	# Salva a pontuação no Firebase se o usuário estiver logado
-	if auth_manager.is_logged_in():
+	# Salva a pontuação no Silent Wolf se o usuário estiver logado
+	if auth_manager.is_user_logged_in():
 		print("Salvando pontuação de %d diretamente do mapa_jogo.gd..." % pontos)
 		salvar_pontuacao(pontos)
 	else:
-		print("Usuário não logado, pontuação não salva no Firebase")
+		print("Usuário não logado, pontuação não salva no Silent Wolf")
 	
 	# Vai para a tela de game over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
 
 # Salva a pontuação usando o AuthManager
 func salvar_pontuacao(pontuacao):
-	if auth_manager.is_logged_in():
-		print("Salvando pontuação de %d no Firebase..." % pontuacao)
+	if auth_manager.is_user_logged_in():
+		print("Salvando pontuação de %d no Silent Wolf..." % pontuacao)
 		auth_manager.save_score(pontuacao)
 	else:
 		print("Usuário não está logado, não é possível salvar pontuação")

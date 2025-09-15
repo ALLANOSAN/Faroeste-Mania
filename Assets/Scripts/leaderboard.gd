@@ -49,7 +49,7 @@ func _on_scores_updated(scores):
 		top_scores.append(scores[i])
 	
 	# Adiciona as linhas de pontuação
-	for i in range(top_scores.size()): 
+	for i in range(top_scores.size()):
 		add_score_row(i + 1, top_scores[i])
 
 # O método add_header_row foi removido pois o cabeçalho agora é parte permanente da cena
@@ -82,7 +82,7 @@ func add_score_row(pos_rank, score_data):
 		pos_container.add_child(medal_texture)
 	else:
 		var pos_label = Label.new()
-		pos_label.text = str(pos_rank)
+		pos_label.text = "%d" % pos_rank
 		pos_label.add_theme_font_size_override("font_size", 22)
 		pos_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		pos_label.add_theme_color_override("font_color", Color(1, 1, 1))
@@ -104,7 +104,7 @@ func add_score_row(pos_rank, score_data):
 	
 	# Pontuação
 	var score_label = Label.new()
-	score_label.text = str(score_data.get("score", 0))
+	score_label.text = "%d" % score_data.get("score", 0)
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	score_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	score_label.add_theme_font_size_override("font_size", 22)

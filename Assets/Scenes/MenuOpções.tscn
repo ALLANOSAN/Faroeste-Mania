@@ -85,3 +85,17 @@ offset_bottom = 84.0
 scale = Vector2(2.285, 2.285)
 icon = ExtResource("1_fo7ht")
 flat = true
+
+[node name="BTPerfilJogador" type="Button" parent="Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 291.0
+offset_top = 1154.0
+offset_right = 825.0
+offset_bottom = 1292.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 85
+theme_override_styles/hover = SubResource("StyleBoxFlat_4tj7s")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_kfyjv")
+theme_override_styles/normal = SubResource("StyleBoxFlat_nnpiv")
+text = "PERFIL"

@@ -29,6 +29,11 @@ func _ready():
 	# Carrega a pontuação atual do jogo que acabou de terminar
 	carregar_pontuacao_atual()
 	
+	# Mostra informações do jogador se estiver logado
+	if auth_manager.is_user_logged_in():
+		print("Jogador logado: " + auth_manager.get_current_user_id())
+		print("Pontuação máxima: " + str(auth_manager.get_player_high_score()))
+	
 	# Ajusta o vídeo para tela cheia
 	ajustar_video_tela_cheia()
 

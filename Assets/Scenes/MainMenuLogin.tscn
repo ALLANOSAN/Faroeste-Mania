@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bxmlm1wuxs2e4"]
+[gd_scene load_steps=10 format=3 uid="uid://bxmlm1wuxs2e4"]
 
 [ext_resource type="Script" uid="uid://dq35c23u0w8xd" path="res://Assets/Scripts/main_menu_login.gd" id="1_7w75u"]
 [ext_resource type="Texture2D" uid="uid://ccuqvqrqoy3bc" path="res://Assets/Art/Tela inicial do jogo mobile png.png" id="1_wn5b6"]
@@ -26,10 +26,6 @@ corner_radius_top_left = 59
 corner_radius_top_right = 59
 corner_radius_bottom_right = 59
 corner_radius_bottom_left = 59
-
-[sub_resource type="LabelSettings" id="LabelSettings_wn5b6"]
-font_size = 76
-font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="Animation" id="Animation_7w75u"]
 resource_name = "TextoAnimado"
@@ -108,6 +104,8 @@ layout_mode = 0
 offset_right = 1080.0
 offset_bottom = 1029.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 80
 text = "Faroeste Mania"
 horizontal_alignment = 1
@@ -128,15 +126,50 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_imcun")
 text = "Clique para fazer login"
 icon_alignment = 1
 
+[node name="SignupLabel" type="Label" parent="MenuPrincipal"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 252.0
+offset_top = 1353.0
+offset_right = 865.0
+offset_bottom = 1403.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 28
+text = "Não tem conta? Clique aqui para se cadastrar"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ResetPasswordLabel" type="Label" parent="MenuPrincipal"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 297.0
+offset_top = 1414.0
+offset_right = 830.0
+offset_bottom = 1464.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 24
+text = "Esqueceu a senha? Clique aqui para recuperar"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="TextoAnimado" type="Label" parent="MenuPrincipal"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 204.0
-offset_top = 1556.0
-offset_right = 872.0
-offset_bottom = 1661.0
+offset_left = 200.0
+offset_top = 1550.0
+offset_right = 880.0
+offset_bottom = 1670.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 80
 text = "Clique para Entrar"
-label_settings = SubResource("LabelSettings_wn5b6")
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="AnimacaoTexto" type="AnimationPlayer" parent="MenuPrincipal/TextoAnimado"]
 unique_name_in_owner = true

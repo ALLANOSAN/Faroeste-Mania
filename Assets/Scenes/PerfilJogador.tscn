@@ -1,0 +1,198 @@
+[gd_scene load_steps=6 format=3 uid="uid://duy0ohqh0xltw"]
+
+[ext_resource type="Script" uid="uid://fhkctuvgaxdr" path="res://Assets/Scripts/perfil_jogador.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://dqug3g25bsg5" path="res://Assets/Art/icons8-voltar-64.png" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+bg_color = Color(0.2, 0.3, 0.4, 0.9)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+bg_color = Color(0.1, 0.2, 0.3, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+bg_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[node name="PerfilJogador" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.1, 0.8)
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="HeaderContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="MainContainer/HeaderContainer"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+icon = ExtResource("2")
+flat = true
+
+[node name="Spacer" type="Control" parent="MainContainer/HeaderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TitleLabel" type="Label" parent="MainContainer/HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 36
+text = "PERFIL DO JOGADOR"
+horizontal_alignment = 1
+
+[node name="Spacer2" type="Control" parent="MainContainer/HeaderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HSeparator" type="HSeparator" parent="MainContainer"]
+layout_mode = 2
+
+[node name="InfoContainer" type="VBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="PlayerInfoPanel" type="Panel" parent="MainContainer/InfoContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="PlayerInfoVBox" type="VBoxContainer" parent="MainContainer/InfoContainer/PlayerInfoPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 30.0
+offset_right = -30.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="PlayerIDLabel" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "ID do Jogador:"
+autowrap_mode = 2
+
+[node name="PlayerIDValue" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Carregando..."
+autowrap_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+layout_mode = 2
+
+[node name="UsernameSection" type="VBoxContainer" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+layout_mode = 2
+
+[node name="UsernameLabel" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/UsernameSection"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Nome de Usuário:"
+
+[node name="UsernameContainer" type="HBoxContainer" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/UsernameSection"]
+layout_mode = 2
+
+[node name="UsernameInput" type="LineEdit" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/UsernameSection/UsernameContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+placeholder_text = "Digite seu nome de usuário"
+
+[node name="SaveUsernameButton" type="Button" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/UsernameSection/UsernameContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+text = "SALVAR"
+
+[node name="StatusLabel" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/UsernameSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+
+[node name="HSeparator4" type="HSeparator" parent="MainContainer/InfoContainer"]
+layout_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MainContainer/InfoContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="LogoutButton" type="Button" parent="MainContainer/InfoContainer/ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+text = "LOGOUT"
+
+[node name="Spacer3" type="Control" parent="MainContainer/InfoContainer/ButtonContainer"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+
+[node name="DeleteAccountButton" type="Button" parent="MainContainer/InfoContainer/ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+text = "EXCLUIR CONTA"
