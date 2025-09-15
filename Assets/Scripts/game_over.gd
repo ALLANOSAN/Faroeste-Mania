@@ -7,6 +7,8 @@ extends Control
 @onready var auth_manager = get_node("/root/AuthManager")
 
 var pontuacao_final = 0
+var foi_rank_salvo = false
+var login_incentive_label = null
 
 func _ready():
 	# Já não precisamos criar o botão manualmente, ele já está na cena
@@ -49,6 +51,10 @@ func _on_video_finished():
 	button_retry.show()
 	button_leaderboard.show()
 	%PontuacaoLabel.show() # Mostra a pontuação final
+	
+	# Se o label de incentivo foi criado, também mostra
+	if login_incentive_label and login_incentive_label.get_parent():
+		login_incentive_label.get_parent().get_parent().show()
 
 func _on_button_menu_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
@@ -57,6 +63,11 @@ func _on_button_retry_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/MapadoJogo.tscn")
 	
 func _on_button_leaderboard_pressed():
+	# Garante que vamos ver a pontuação atualizada imediatamente
+	if auth_manager.is_user_logged_in():
+		# Recarrega as pontuações antes de abrir a tela
+		auth_manager.load_scores()
+	
 	get_tree().change_scene_to_file("res://Assets/Scenes/Leaderboard.tscn")
 
 func carregar_pontuacao_atual():
@@ -74,9 +85,19 @@ func carregar_pontuacao_atual():
 				pontuacao_final = data.pontuacao
 				print("Pontuação atual carregada: ", pontuacao_final)
 				
+				# Verifica se o rank foi salvo
+				foi_rank_salvo = data.get("rank_salvo", false)
+				
 				# Atualiza a UI com a pontuação
-				if has_node("PontuacaoLabel"):
-					%PontuacaoLabel.text = "Pontuação: %d" % pontuacao_final
+				if has_node("%PontuacaoLabel"):
+					if foi_rank_salvo:
+						%PontuacaoLabel.text = "Pontuação: %d\n(Salva na classificação!)" % pontuacao_final
+					else:
+						%PontuacaoLabel.text = "Pontuação: %d" % pontuacao_final
+						
+				# Se não estiver logado e tiver uma boa pontuação, incentivar login
+				if not auth_manager.is_user_logged_in() and pontuacao_final > 50:
+					criar_incentivo_login()
 		else:
 			print("Erro ao analisar dados do jogo")
 	else:
@@ -89,3 +110,45 @@ func carregar_pontuacao_atual():
 		if dir:
 			dir.remove("temp_game_data.save")
 			print("Arquivo temporário de pontuação removido")
+			
+func criar_incentivo_login():
+	# Cria um label incentivando o jogador a se registrar para salvar pontuações
+	var incentive_container = Control.new()
+	incentive_container.name = "LoginIncentiveContainer"
+	incentive_container.anchor_right = 1.0
+	incentive_container.anchor_bottom = 0.3
+	incentive_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	var panel = Panel.new()
+	panel.self_modulate = Color(0, 0, 0, 0.7)
+	panel.anchor_right = 1.0
+	panel.anchor_bottom = 1.0
+	incentive_container.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.anchor_right = 1.0
+	vbox.anchor_bottom = 1.0
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 15)
+	incentive_container.add_child(vbox)
+	
+	login_incentive_label = Label.new()
+	login_incentive_label.text = "Boa pontuação! Faça login para registrar seus pontos no ranking mundial!"
+	login_incentive_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	login_incentive_label.add_theme_font_size_override("font_size", 24)
+	login_incentive_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2))
+	login_incentive_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	login_incentive_label.add_theme_constant_override("outline_size", 3)
+	vbox.add_child(login_incentive_label)
+	
+	var button = Button.new()
+	button.text = "Fazer Login / Registrar"
+	button.custom_minimum_size = Vector2(250, 50)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	button.pressed.connect(func(): get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn"))
+	vbox.add_child(button)
+	
+	add_child(incentive_container)
+	
+	# Posiciona o container abaixo da pontuação
+	incentive_container.position.y = 350

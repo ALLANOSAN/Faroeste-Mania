@@ -154,6 +154,27 @@ func get_player_high_score() -> int:
 	"""Retorna a pontuação máxima do jogador"""
 	return player_high_score
 
+func get_player_rank() -> Dictionary:
+	"""Retorna o rank do jogador e a pontuação total na classificação global"""
+	var player_rank = 0
+	var total_players = 0
+	
+	# Verifica se o jogador está logado
+	if not is_logged_in or current_user_id == "":
+		return {"rank": 0, "total": 0}
+	
+	# Verifica se temos as pontuações carregadas
+	if SilentWolf.Scores.scores.size() > 0:
+		total_players = SilentWolf.Scores.scores.size()
+		
+		# Procura o jogador na lista de pontuações
+		for i in range(SilentWolf.Scores.scores.size()):
+			if SilentWolf.Scores.scores[i].get("name", "") == current_user_id:
+				player_rank = i + 1
+				break
+	
+	return {"rank": player_rank, "total": total_players}
+
 # Callback do Silent Wolf Scores
 func _on_sw_scores_complete():
 	print("Scores carregados com sucesso!")

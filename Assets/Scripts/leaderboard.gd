@@ -40,8 +40,33 @@ func _on_scores_updated(scores):
 		var label = Label.new()
 		label.text = "Nenhuma pontuação encontrada"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		placar_container.add_child(label)
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		label.add_theme_font_size_override("font_size", 26)
+		label.add_theme_color_override("font_color", Color(1, 0.8, 0.2)) # Amarelo dourado
+		label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+		label.add_theme_constant_override("outline_size", 3)
+		
+		# Adiciona botão para tentar novamente se não há pontuações
+		var retry_button = Button.new()
+		retry_button.text = "Atualizar Pontuações"
+		retry_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		retry_button.custom_minimum_size = Vector2(200, 50)
+		retry_button.pressed.connect(func(): auth_manager.load_scores())
+		
+		var vbox = VBoxContainer.new()
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		vbox.add_theme_constant_override("separation", 20)
+		
+		vbox.add_child(label)
+		vbox.add_child(retry_button)
+		placar_container.add_child(vbox)
 		return
+	
+	# Ordenar as pontuações (garantir que estejam em ordem decrescente)
+	scores.sort_custom(func(a, b): return a.score > b.score)
 	
 	# Garantir que temos apenas as 10 melhores pontuações
 	var top_scores = []

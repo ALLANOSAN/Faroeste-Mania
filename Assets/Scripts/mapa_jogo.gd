@@ -208,19 +208,22 @@ func game_over():
 	
 	# Salvar a pontuação para mostrar na tela de game over
 	var jogo_data = {
-		"pontuacao": pontos
+		"pontuacao": pontos,
+		"rank_salvo": false # Inicialmente definimos como falso
 	}
-	
-	# Salva temporariamente os dados do jogo (para uso local)
-	var save_game = FileAccess.open("user://temp_game_data.save", FileAccess.WRITE)
-	save_game.store_line(JSON.stringify(jogo_data))
 	
 	# Salva a pontuação no Silent Wolf se o usuário estiver logado
 	if auth_manager.is_user_logged_in():
 		print("Salvando pontuação de %d diretamente do mapa_jogo.gd..." % pontos)
 		salvar_pontuacao(pontos)
+		# Marca que o rank foi salvo para informar na tela de game over
+		jogo_data["rank_salvo"] = true
 	else:
 		print("Usuário não logado, pontuação não salva no Silent Wolf")
+	
+	# Salva temporariamente os dados do jogo (para uso local)
+	var save_game = FileAccess.open("user://temp_game_data.save", FileAccess.WRITE)
+	save_game.store_line(JSON.stringify(jogo_data))
 	
 	# Vai para a tela de game over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")

@@ -126,6 +126,47 @@ autowrap_mode = 2
 [node name="HSeparator2" type="HSeparator" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
 layout_mode = 2
 
+[node name="RankSection" type="VBoxContainer" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RankTitle" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/RankSection"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 24
+text = "Sua classificação:"
+
+[node name="PlayerRankLabel" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/RankSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 26
+text = "Carregando..."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="HighScoreTitle" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/RankSection"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 24
+text = "Sua maior pontuação:"
+
+[node name="PlayerScoreLabel" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox/RankSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 26
+text = "Carregando..."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+layout_mode = 2
+
 [node name="UsernameSection" type="VBoxContainer" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
 layout_mode = 2
 

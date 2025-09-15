@@ -7,6 +7,8 @@ extends Control
 @onready var status_label = %StatusLabel
 @onready var logout_button = %LogoutButton
 @onready var delete_account_button = %DeleteAccountButton
+@onready var player_rank_label = %PlayerRankLabel # Label para o rank do jogador
+@onready var player_score_label = %PlayerScoreLabel # Label para a pontuação do jogador
 
 @onready var global = get_node("/root/Global")
 
@@ -19,6 +21,12 @@ func _ready():
 	
 	# Carregar informações do jogador
 	load_player_info()
+	
+	# Carrega as pontuações para mostrar o rank do jogador
+	global.load_scores()
+	
+	# Conecta ao sinal de pontuações atualizadas para mostrar o rank
+	global.scores_updated.connect(_on_scores_updated)
 
 func load_player_info():
 	"""Carrega e exibe as informações do jogador"""
@@ -34,6 +42,10 @@ func load_player_info():
 	else:
 		# Se não estiver logado, volta para o menu principal
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+
+func _on_scores_updated(_scores):
+	"""Quando as pontuações são atualizadas, atualiza a exibição do rank do jogador"""
+	atualizar_rank_jogador()
 
 func _on_back_button_pressed():
 	"""Volta para o menu de opções"""
@@ -115,3 +127,24 @@ func _input(event):
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_ENTER and username_input.has_focus():
 			_on_save_username_pressed()
+			
+func atualizar_rank_jogador():
+	"""Atualiza a exibição do rank do jogador"""
+	if not is_instance_valid(player_rank_label) or not is_instance_valid(player_score_label):
+		print("Labels de rank não encontrados. Eles podem não existir na cena.")
+		return
+		
+	if not global.is_user_logged_in():
+		player_rank_label.text = "Faça login para ver seu rank"
+		player_score_label.text = "0"
+		return
+		
+	var rank_info = global.get_player_rank()
+	var high_score = global.get_player_high_score()
+	
+	if rank_info.rank > 0:
+		player_rank_label.text = "%dº Lugar de %d" % [rank_info.rank, rank_info.total]
+	else:
+		player_rank_label.text = "Sem classificação ainda"
+		
+	player_score_label.text = "%d" % high_score
