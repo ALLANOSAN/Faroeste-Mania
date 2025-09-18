@@ -22,8 +22,8 @@ id_token="eyJhbGciOiJSUzI1NiIsImtpZCI6ImUzZWU3ZTAyOGUzODg1YTM0NWNlMDcwNTVmODQ2OD
 
 [autoload]
 
-SilentWolf="*res://addons/silent_wolf/SilentWolf.gd"
 Global="*res://Assets/Scripts/Global.gd"
+LootLockerManager="*res://Assets/Scripts/LootLockerManager.gd"
 
 [debug]
 
@@ -50,7 +50,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/silent_wolf/plugin.cfg")
+enabled=PackedStringArray("res://addons/LootLockerSDK/plugin.cfg")
 
 [importer_defaults]
 

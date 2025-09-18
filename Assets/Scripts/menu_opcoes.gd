@@ -4,7 +4,8 @@ extends Control
 @onready var botao_som = %BTChamarMenuSom
 @onready var botao_leaderboard = %BTChamarMenuLeadboard
 @onready var botao_perfil = %BTPerfilJogador
-@onready var auth_manager = get_node("/root/AuthManager")
+@onready var loot_locker_manager = get_node("/root/LootLockerManager")
+@onready var global = get_node("/root/Global")
 
 func _ready():
 	# Conectar os sinais dos botões
@@ -15,6 +16,9 @@ func _ready():
 	
 	# Mostrar/esconder botão de perfil baseado no status de login
 	_update_perfil_button_visibility()
+	
+	# Aplicar otimizações específicas de plataforma
+	_apply_platform_specific_settings()
 
 func _on_botao_voltar_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
@@ -31,7 +35,18 @@ func _on_botao_perfil_pressed():
 
 func _update_perfil_button_visibility():
 	# Mostra o botão de perfil apenas se o usuário estiver logado
-	if auth_manager.is_user_logged_in():
+	if global.is_user_logged_in():
 		botao_perfil.show()
 	else:
 		botao_perfil.hide()
+
+func _apply_platform_specific_settings():
+	# Aplica configurações específicas para a plataforma atual
+	if global.Platform.is_mobile:
+		# Otimizações para dispositivos móveis
+		print("Aplicando configurações de UI para dispositivos móveis no menu de opções...")
+		# Ajustar tamanhos de botões, fontes etc para telas menores se necessário
+	else:
+		# Otimizações para desktop
+		print("Aplicando configurações de UI para desktop no menu de opções...")
+		# Ajustar elementos para uso com mouse

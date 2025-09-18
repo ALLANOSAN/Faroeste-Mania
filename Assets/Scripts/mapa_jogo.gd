@@ -14,8 +14,9 @@ var combo_timeout = 1.5 # Tempo em segundos para resetar o combo
 var alvo_ativo = false
 var tempo_restante = 0
 
-# Referência ao AuthManager
-@onready var auth_manager = get_node("/root/AuthManager")
+# Referência aos gerenciadores
+@onready var loot_locker = get_node("/root/LootLockerManager")
+@onready var global = get_node("/root/Global")
 
 # Referências de nós
 @onready var alvo = %CharacterBody2D
@@ -44,9 +45,9 @@ func _ready():
 		print("Sinal input_event conectado ao alvo")
 	
 	# Verifica se o jogador está logado para mostrar informações
-	if auth_manager.is_user_logged_in():
-		print("Jogador logado: " + auth_manager.get_current_user_id())
-		print("Pontuação máxima atual: " + str(auth_manager.get_player_high_score()))
+	if global.is_user_logged_in():
+		print("Jogador logado: " + global.get_current_user_id())
+		print("Pontuação máxima atual: " + str(global.get_player_high_score()))
 	
 	# Inicia o primeiro spawn diretamente
 	spawn_alvo()
@@ -99,28 +100,29 @@ func spawn_alvo():
 	tempo_restante = tempo_spawn
 
 func _on_alvo_input_event(_viewport, event, _shape_idx):
-	# Verifica se é um clique de mouse (botão esquerdo) ou toque de tela
-	# Adicionado suporte para cliques de mouse para permitir testes no PC
-	if alvo_ativo and ((event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed)):
+	# Usa o sistema Platform para verificar se é um clique válido para a plataforma atual
+	if alvo_ativo and get_node("/root/Global").Platform.is_valid_click(event):
 		# Chama a função de acertar alvo
 		acertar_alvo()
 
 # Método alternativo para detecção de toques e cliques
-# Atualizado para suportar tanto toques em dispositivos móveis quanto cliques de mouse em PC
+# Usa o sistema Platform para otimizar por tipo de dispositivo
 func _input(event):
 	if alvo_ativo:
 		var input_position = Vector2.ZERO
 		var is_valid_input = false
 		
-		# Verifica se é toque de tela (para dispositivos móveis)
-		if event is InputEventScreenTouch and event.pressed:
-			input_position = event.position
-			is_valid_input = true
-		
-		# Verifica se é clique do mouse (para teste no PC)
-		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			input_position = event.position
-			is_valid_input = true
+		# Verificação otimizada baseada na plataforma atual
+		if global.Platform.is_mobile:
+			# Em dispositivos móveis, processa apenas eventos de toque
+			if event is InputEventScreenTouch and event.pressed:
+				input_position = event.position
+				is_valid_input = true
+		else:
+			# Em desktop, processa apenas eventos de mouse
+			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				input_position = event.position
+				is_valid_input = true
 		
 		# Se for um input válido (toque ou clique)
 		if is_valid_input:
@@ -160,8 +162,8 @@ func acertar_alvo():
 	ajustar_dificuldade()
 	
 	# Atualiza a pontuação máxima local
-	if auth_manager.is_user_logged_in() and pontos > auth_manager.get_player_high_score():
-		auth_manager.player_high_score = pontos
+	if global.is_user_logged_in() and pontos > global.get_player_high_score():
+		global.player_high_score = pontos
 	
 	# Prepara para o próximo spawn imediatamente
 	spawn_alvo()
@@ -212,14 +214,11 @@ func game_over():
 		"rank_salvo": false # Inicialmente definimos como falso
 	}
 	
-	# Salva a pontuação no Silent Wolf se o usuário estiver logado
-	if auth_manager.is_user_logged_in():
-		print("Salvando pontuação de %d diretamente do mapa_jogo.gd..." % pontos)
-		salvar_pontuacao(pontos)
-		# Marca que o rank foi salvo para informar na tela de game over
-		jogo_data["rank_salvo"] = true
-	else:
-		print("Usuário não logado, pontuação não salva no Silent Wolf")
+	# Salva a pontuação usando LootLocker
+	print("Salvando pontuação de %d diretamente do mapa_jogo.gd..." % pontos)
+	salvar_pontuacao(pontos)
+	# Marca que o rank foi salvo para informar na tela de game over
+	jogo_data["rank_salvo"] = true
 	
 	# Salva temporariamente os dados do jogo (para uso local)
 	var save_game = FileAccess.open("user://temp_game_data.save", FileAccess.WRITE)
@@ -228,10 +227,7 @@ func game_over():
 	# Vai para a tela de game over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
 
-# Salva a pontuação usando o AuthManager
+# Salva a pontuação usando o LootLocker
 func salvar_pontuacao(pontuacao):
-	if auth_manager.is_user_logged_in():
-		print("Salvando pontuação de %d no Silent Wolf..." % pontuacao)
-		auth_manager.save_score(pontuacao)
-	else:
-		print("Usuário não está logado, não é possível salvar pontuação")
+	print("Salvando pontuação de %d no LootLocker..." % pontuacao)
+	global.save_score(pontuacao)

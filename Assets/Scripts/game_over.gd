@@ -4,7 +4,8 @@ extends Control
 @onready var button_retry = %botao_tentar_novamente
 @onready var button_leaderboard = %botao_classificacao
 @onready var button_tela_inicial = %botao_tela_inicial
-@onready var auth_manager = get_node("/root/AuthManager")
+@onready var loot_locker_manager = get_node("/root/LootLockerManager")
+@onready var global = get_node("/root/Global")
 
 var pontuacao_final = 0
 var foi_rank_salvo = false
@@ -32,12 +33,15 @@ func _ready():
 	carregar_pontuacao_atual()
 	
 	# Mostra informações do jogador se estiver logado
-	if auth_manager.is_user_logged_in():
-		print("Jogador logado: " + auth_manager.get_current_user_id())
-		print("Pontuação máxima: " + str(auth_manager.get_player_high_score()))
+	if global.is_user_logged_in():
+		print("Jogador logado: " + global.get_current_user_id())
+		print("Pontuação máxima: " + str(global.get_player_high_score()))
 	
 	# Ajusta o vídeo para tela cheia
 	ajustar_video_tela_cheia()
+	
+	# Aplica configurações específicas para a plataforma atual
+	_apply_platform_specific_settings()
 
 func ajustar_video_tela_cheia():
 	# Como o VideoPlayer já tem anchors = (0, 0, 1, 1), ele já está configurado para preencher toda a tela
@@ -64,9 +68,9 @@ func _on_button_retry_pressed():
 	
 func _on_button_leaderboard_pressed():
 	# Garante que vamos ver a pontuação atualizada imediatamente
-	if auth_manager.is_user_logged_in():
+	if global.is_user_logged_in():
 		# Recarrega as pontuações antes de abrir a tela
-		auth_manager.load_scores()
+		global.load_leaderboard()
 	
 	get_tree().change_scene_to_file("res://Assets/Scenes/Leaderboard.tscn")
 
@@ -96,7 +100,7 @@ func carregar_pontuacao_atual():
 						%PontuacaoLabel.text = "Pontuação: %d" % pontuacao_final
 						
 				# Se não estiver logado e tiver uma boa pontuação, incentivar login
-				if not auth_manager.is_user_logged_in() and pontuacao_final > 50:
+				if not global.is_user_logged_in() and pontuacao_final > 50:
 					criar_incentivo_login()
 		else:
 			print("Erro ao analisar dados do jogo")
@@ -145,10 +149,27 @@ func criar_incentivo_login():
 	button.text = "Fazer Login / Registrar"
 	button.custom_minimum_size = Vector2(250, 50)
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	button.pressed.connect(func(): get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn"))
+	button.pressed.connect(func(): get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn"))
 	vbox.add_child(button)
 	
 	add_child(incentive_container)
 	
 	# Posiciona o container abaixo da pontuação
 	incentive_container.position.y = 350
+	
+func _apply_platform_specific_settings():
+	"""Aplica configurações específicas para a plataforma atual"""
+	if global.Platform.is_mobile:
+		# Otimizações para dispositivos móveis
+		print("Aplicando configurações de UI para dispositivos móveis na tela de game over...")
+		# Aumentar tamanho dos botões para melhor uso com toque
+		if is_instance_valid(button_retry):
+			button_retry.custom_minimum_size.y = 80
+		if is_instance_valid(button_leaderboard):
+			button_leaderboard.custom_minimum_size.y = 80
+		if is_instance_valid(button_tela_inicial):
+			button_tela_inicial.custom_minimum_size.y = 80
+	else:
+		# Otimizações para desktop
+		print("Aplicando configurações de UI para desktop na tela de game over...")
+		# Manter tamanhos padrão, adequados para uso com mouse

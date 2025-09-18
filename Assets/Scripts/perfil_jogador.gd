@@ -27,6 +27,9 @@ func _ready():
 	
 	# Conecta ao sinal de pontuações atualizadas para mostrar o rank
 	global.scores_updated.connect(_on_scores_updated)
+	
+	# Aplica configurações específicas para a plataforma atual
+	_apply_platform_specific_settings()
 
 func load_player_info():
 	"""Carrega e exibe as informações do jogador"""
@@ -35,10 +38,18 @@ func load_player_info():
 		player_id_value.text = global.get_current_user_id()
 		
 		# Define o nome de usuário atual no campo de input
-		username_input.text = global.get_current_user_id()
+		var player_name = global.get_player_name()
+		if player_name != "Visitante":
+			username_input.text = player_name
+		else:
+			username_input.text = global.get_current_user_id()
 		
 		print("Informações do jogador carregadas:")
 		print("ID: " + global.get_current_user_id())
+		print("Nome: " + global.get_player_name())
+		
+		# Atualiza as informações de rank e pontuação
+		atualizar_rank_jogador()
 	else:
 		# Se não estiver logado, volta para o menu principal
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
@@ -59,23 +70,26 @@ func _on_save_username_pressed():
 		show_status("Nome de usuário não pode estar vazio!", Color(1, 0, 0))
 		return
 	
-	if new_username == global.get_current_user_id():
+	if new_username == global.get_player_name():
 		show_status("Este já é seu nome de usuário atual!", Color(1, 1, 0))
 		return
+		
+	# Mostra status de salvamento
+	show_status("Salvando nome de usuário...", Color(1, 1, 0))
 	
-	# Aqui você pode implementar a lógica para alterar o nome de usuário
-	# Por enquanto, vamos simular o salvamento
-	show_status("Nome de usuário alterado com sucesso!", Color(0, 1, 0))
-	
-	# Atualiza o ID local (em um sistema real, isso viria do servidor)
-	global.current_user_id = new_username
-	player_id_value.text = new_username
+	# Implementação real para salvar o nome do jogador usando LootLocker
+	if global.loot_locker_manager:
+		global.loot_locker_manager.set_player_name(new_username)
+		show_status("Nome de usuário alterado com sucesso!", Color(0, 1, 0))
+	else:
+		show_status("Erro ao alterar nome de usuário!", Color(1, 0, 0))
+		return
 	
 	print("Nome de usuário alterado para: " + new_username)
 
 func _on_logout_button_pressed():
 	"""Faz logout do jogador"""
-	global.clear_session()
+	global.logout()
 	show_status("Logout realizado com sucesso!", Color(0, 1, 0))
 	
 	# Aguarda um pouco e volta para o menu principal
@@ -138,13 +152,40 @@ func atualizar_rank_jogador():
 		player_rank_label.text = "Faça login para ver seu rank"
 		player_score_label.text = "0"
 		return
-		
-	var rank_info = global.get_player_rank()
+	
+	# Mostra indicador de carregamento
+	player_rank_label.text = "Carregando rank..."
+	
+	# Obtem o rank do jogador (função assíncrona)
+	var rank_info = await global.get_player_rank()
 	var high_score = global.get_player_high_score()
 	
 	if rank_info.rank > 0:
-		player_rank_label.text = "%dº Lugar de %d" % [rank_info.rank, rank_info.total]
+		player_rank_label.text = "%dº Lugar no Ranking Global" % rank_info.rank
+		
+		# Se o rank for maior que 10, adiciona uma mensagem especial
+		if rank_info.rank > 10:
+			player_rank_label.text += "\n(Fora do Top 10 mostrado na tabela principal)"
 	else:
 		player_rank_label.text = "Sem classificação ainda"
 		
-	player_score_label.text = "%d" % high_score
+	player_score_label.text = "%d pontos" % high_score
+	
+func _apply_platform_specific_settings():
+	"""Aplica configurações específicas para a plataforma atual"""
+	if global.Platform.is_mobile:
+		# Otimizações para dispositivos móveis
+		print("Aplicando configurações de UI para dispositivos móveis na tela de perfil...")
+		# Ajustar tamanho de botões e inputs para melhor uso com toque
+		if is_instance_valid(username_input):
+			username_input.custom_minimum_size.y = 60
+		if is_instance_valid(save_username_button):
+			save_username_button.custom_minimum_size.y = 60
+		if is_instance_valid(logout_button):
+			logout_button.custom_minimum_size.y = 60
+		if is_instance_valid(delete_account_button):
+			delete_account_button.custom_minimum_size.y = 60
+	else:
+		# Otimizações para desktop
+		print("Aplicando configurações de UI para desktop na tela de perfil...")
+		# Manter tamanhos padrão, adequados para uso com mouse

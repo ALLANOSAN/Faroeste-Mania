@@ -1,9 +1,10 @@
 extends Control
 
-@onready var auth_manager = get_node("/root/AuthManager")
 @onready var placar_container = %VBoxContainer
 @onready var loading_label = %LoadingLabel
 @onready var voltar_button = %BotaoVoltar
+@onready var global = get_node("/root/Global")
+@onready var loot_locker = get_node("/root/LootLockerManager")
 
 # Referências para as texturas de medalhas
 @onready var medal_gold = preload("res://Assets/Art/medalhaouro.png")
@@ -13,14 +14,17 @@ extends Control
 
 func _ready():
 	# Conecta ao sinal de pontuações atualizadas
-	auth_manager.scores_updated.connect(_on_scores_updated)
+	loot_locker.scores_updated.connect(_on_scores_updated)
 	
 	# Conecta botão de voltar
 	voltar_button.pressed.connect(_on_voltar_pressed)
 	
 	# Carrega as pontuações
 	loading_label.text = "Carregando pontuações..."
-	auth_manager.load_scores()
+	global.load_leaderboard()
+	
+	# Aplica configurações específicas para a plataforma atual
+	_apply_platform_specific_settings()
 
 func _on_voltar_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
@@ -52,7 +56,7 @@ func _on_scores_updated(scores):
 		retry_button.text = "Atualizar Pontuações"
 		retry_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		retry_button.custom_minimum_size = Vector2(200, 50)
-		retry_button.pressed.connect(func(): auth_manager.load_scores())
+		retry_button.pressed.connect(func(): global.load_leaderboard())
 		
 		var vbox = VBoxContainer.new()
 		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -77,8 +81,6 @@ func _on_scores_updated(scores):
 	for i in range(top_scores.size()):
 		add_score_row(i + 1, top_scores[i])
 
-# O método add_header_row foi removido pois o cabeçalho agora é parte permanente da cena
-
 # Adiciona uma linha de pontuação
 func add_score_row(pos_rank, score_data):
 	var row = HBoxContainer.new()
@@ -94,56 +96,74 @@ func add_score_row(pos_rank, score_data):
 	
 	if pos_rank <= 3:
 		var medal_texture = TextureRect.new()
-		
-		# Escolhe a medalha correta
-		match pos_rank:
-			1: medal_texture.texture = medal_gold
-			2: medal_texture.texture = medal_silver
-			3: medal_texture.texture = medal_bronze
-		
-		medal_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		medal_texture.custom_minimum_size = Vector2(32, 32)
-		medal_texture.expand = true
+		medal_texture.texture = get_medal_texture(pos_rank)
+		medal_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		medal_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+		medal_texture.custom_minimum_size = Vector2(40, 40)
 		pos_container.add_child(medal_texture)
 	else:
+		# Para posições acima de 3, mostra o número da posição
 		var pos_label = Label.new()
-		pos_label.text = "%d" % pos_rank
-		pos_label.add_theme_font_size_override("font_size", 22)
+		pos_label.text = str(pos_rank) + "º"
 		pos_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		pos_label.add_theme_color_override("font_color", Color(1, 1, 1))
+		pos_label.add_theme_font_size_override("font_size", 22)
+		pos_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2)) # Amarelo dourado
 		pos_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 		pos_label.add_theme_constant_override("outline_size", 2)
 		pos_container.add_child(pos_label)
 	
+	row.add_child(pos_container)
+	
 	# Nome do jogador
 	var name_label = Label.new()
-	name_label.text = score_data.get("name", "???")
+	name_label.text = score_data.name # Adaptado para o formato do LootLocker
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_label.size_flags_stretch_ratio = 2.0
-	name_label.clip_text = true
+	name_label.size_flags_stretch_ratio = 2.5
+	name_label.clip_text = true # Corta o texto se for muito longo
 	name_label.add_theme_font_size_override("font_size", 22)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 	name_label.add_theme_constant_override("outline_size", 2)
 	
+	# Destaca o jogador atual
+	if score_data.user_id == global.get_current_user_id():
+		name_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3)) # Verde para destacar o jogador atual
+		
+	row.add_child(name_label)
+	
 	# Pontuação
 	var score_label = Label.new()
-	score_label.text = "%d" % score_data.get("score", 0)
-	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	score_label.text = str(score_data.score)
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	score_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	score_label.size_flags_stretch_ratio = 1
 	score_label.add_theme_font_size_override("font_size", 22)
-	score_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	score_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2)) # Amarelo dourado
 	score_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 	score_label.add_theme_constant_override("outline_size", 2)
-	
-	row.add_child(pos_container)
-	row.add_child(name_label)
 	row.add_child(score_label)
 	
-	placar_container.add_child(row)
+	# Adiciona um separador
+	var separator = HSeparator.new()
+	separator.theme_type_variation = "ThinHSeparator"
 	
-	# Adiciona um pequeno espaço entre linhas
-	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 8)
-	placar_container.add_child(spacer)
+	# Adiciona a linha e o separador ao container principal
+	placar_container.add_child(row)
+	placar_container.add_child(separator)
+
+# Retorna a textura da medalha baseada na posição
+func get_medal_texture(pos):
+	match pos:
+		1: return medal_gold
+		2: return medal_silver
+		3: return medal_bronze
+		_: return null
+
+# Função para ajustar a interface com base na plataforma
+func _apply_platform_specific_settings():
+	if global.Platform.is_mobile:
+		# Em dispositivos móveis, podemos querer ajustar tamanhos de fonte, etc.
+		pass
+	else:
+		# Em desktop, podemos ter outros ajustes
+		pass

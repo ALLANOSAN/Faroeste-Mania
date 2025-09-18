@@ -126,36 +126,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_imcun")
 text = "Clique para fazer login"
 icon_alignment = 1
 
-[node name="SignupLabel" type="Label" parent="MenuPrincipal"]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 252.0
-offset_top = 1353.0
-offset_right = 865.0
-offset_bottom = 1403.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 28
-text = "Não tem conta? Clique aqui para se cadastrar"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ResetPasswordLabel" type="Label" parent="MenuPrincipal"]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 297.0
-offset_top = 1414.0
-offset_right = 830.0
-offset_bottom = 1464.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 24
-text = "Esqueceu a senha? Clique aqui para recuperar"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="TextoAnimado" type="Label" parent="MenuPrincipal"]
 unique_name_in_owner = true
 layout_mode = 0
