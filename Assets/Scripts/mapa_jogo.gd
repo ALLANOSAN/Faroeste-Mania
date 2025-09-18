@@ -230,4 +230,5 @@ func game_over():
 # Salva a pontuação usando o LootLocker
 func salvar_pontuacao(pontuacao):
 	print("Salvando pontuação de %d no LootLocker..." % pontuacao)
-	global.save_score(pontuacao)
+	# Corrigido: usando a função correta do global
+	global.submit_score(pontuacao)

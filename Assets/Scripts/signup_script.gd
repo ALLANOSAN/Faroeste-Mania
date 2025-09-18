@@ -40,8 +40,21 @@ func _on_button_pressed() -> void:
 	global.register_user(email, password)
 	
 	# O display_name será salvo após o login bem-sucedido
-	loot_locker.register_success.connect(func(data):
-		loot_locker.set_player_name(display_name)
+	# Conectamos ao sinal de registro bem-sucedido para definir o nome de exibição
+	# Este callback será executado quando a autenticação for concluída com sucesso
+	loot_locker.register_success.connect(func(_data): # Usando underscore para indicar que não usamos o parâmetro
+		# De acordo com o SDK oficial, após a autenticação, definimos o nome do jogador
+		print("Definindo nome de exibição do jogador: " + display_name)
+		# Esta chamada usa internamente LL_Players.SetPlayerName.new(nome).send()
+		# Em Godot 4.x, podemos simplesmente usar await diretamente
+		var resposta = await loot_locker.set_player_name(display_name)
+		
+		# Verificamos se o nome foi definido com sucesso
+		# Isso é importante porque o LootLockerManager.gd verifica o sucesso da chamada
+		if resposta and resposta.success:
+			print("Nome do jogador definido com sucesso para: " + display_name)
+		else:
+			print("Erro ao definir nome do jogador")
 	, CONNECT_ONE_SHOT)
 
 func _on_back_button_pressed():
@@ -60,9 +73,17 @@ func _ready():
 	# Aplica configurações específicas para a plataforma atual
 	_apply_platform_specific_settings()
 	
-func _on_register_success(user_data):
-	# A navegação para a tela principal é feita automaticamente após o login
-	pass
+func _on_register_success(_user_data): # Usando underscore para indicar que não usamos o parâmetro
+	# De acordo com o SDK oficial, o callback register_success é acionado
+	# após o login bem-sucedido que ocorre automaticamente após o registro
+	# Mostramos uma mensagem de confirmação
+	feedback_text.text = "Registro concluído com sucesso!"
+	
+	# Não estamos usando os dados do usuário diretamente nesta função
+	# O registro e login são gerenciados automaticamente pelo LootLockerManager
+	
+	# Após sucesso, navegamos para a tela principal do jogo (se necessário)
+	# O LootLockerManager.gd já faz a maioria dos processos automaticamente
 	
 func _on_register_failed(error_message):
 	feedback_text.text = "Falha no registro: " + error_message

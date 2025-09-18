@@ -42,15 +42,38 @@ func _ready():
 	
 	# Aplica configurações específicas para a plataforma atual
 	_apply_platform_specific_settings()
+	
+	# Timer de segurança para garantir que os botões apareçam mesmo se o vídeo falhar
+	var safety_timer = get_tree().create_timer(7.0) # 7 segundos é tempo suficiente para o vídeo
+	safety_timer.timeout.connect(_mostrar_interface_pos_video)
+	
+	# Inicia a reprodução do vídeo automaticamente
+	print("Iniciando reprodução do vídeo Game Over...")
+	video_player.play()
 
 func ajustar_video_tela_cheia():
 	# Como o VideoPlayer já tem anchors = (0, 0, 1, 1), ele já está configurado para preencher toda a tela
 	# Não precisamos definir o tamanho manualmente, pois os anchors já fazem isso
-	# Removendo a definição de tamanho que estava causando o aviso
-	pass
+	# Verificar se o stream de vídeo está configurado
+	if video_player.stream == null:
+		print("ERRO: Stream de vídeo não está configurado no VideoPlayer")
+		# Tenta carregar o vídeo programaticamente como fallback
+		var video_resource = load("res://Assets/Videos/Game-Over.ogv")
+		if video_resource:
+			print("Video encontrado e carregado programaticamente")
+			video_player.stream = video_resource
+		else:
+			print("ERRO: Não foi possível carregar o vídeo Game-Over.ogv")
+	else:
+		print("Stream de vídeo configurado corretamente: " + video_player.stream.resource_path)
 
 func _on_video_finished():
 	print("Vídeo finalizado, mostrando botões")
+	_mostrar_interface_pos_video()
+
+# Função separada para mostrar a interface após o vídeo
+# Isso facilita chamar de outros lugares se necessário
+func _mostrar_interface_pos_video():
 	button_tela_inicial.show()
 	button_retry.show()
 	button_leaderboard.show()
