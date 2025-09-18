@@ -137,7 +137,7 @@ func login_user(email: String, password: String):
 		return
 		
 	# Login bem sucedido - substituímos os dados de convidado pelos dados do usuário White Label
-	response.player_identifier = email  # Usamos o email como identificador
+	response.player_identifier = email # Usamos o email como identificador
 	_handle_successful_login(response)
 	
 	# Se marcou "lembrar-me", salvamos as credenciais localmente
