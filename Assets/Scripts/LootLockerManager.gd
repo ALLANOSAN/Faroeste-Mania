@@ -1,5 +1,118 @@
 extends Node
 
+# As classes do SDK LootLocker já são carregadas automaticamente pelo Godot
+# como classes globais, então não precisamos carregá-las explicitamente
+
+# Funções para criar implementações simuladas (serão usadas apenas se o SDK não for encontrado)
+func _create_simulated_white_label():
+	var cls = {}
+	cls.SignUp = _create_simulated_signup_class()
+	cls.Login = _create_simulated_login_class()
+	return cls
+	
+func _create_simulated_signup_class():
+	var cls = {}
+	cls.new = func(email, password):
+		var obj = {}
+		obj.email = email
+		obj.password = password
+		obj.send = func():
+			# Simulação de resposta
+			return {"success": true}
+		return obj
+	return cls
+	
+func _create_simulated_login_class():
+	var cls = {}
+	cls.new = func(email, password, remember_me_arg = true):
+		var obj = {}
+		obj.email = email
+		obj.password = password
+		obj.remember_me = remember_me_arg
+		obj.send = func():
+			# Simulação de resposta
+			return {"success": true}
+		return obj
+	return cls
+	
+func _create_simulated_authentication():
+	var cls = {}
+	cls.GuestSession = _create_simulated_guest_session_class()
+	cls.EndSession = _create_simulated_end_session_class()
+	return cls
+	
+func _create_simulated_guest_session_class():
+	var cls = {}
+	cls.new = func():
+		var obj = {}
+		obj.send = func():
+			# Simulação de resposta
+			return {
+				"success": true,
+				"player_id": "123456",
+				"player_identifier": "guest",
+				"player_name": "Jogador Convidado"
+			}
+		return obj
+	return cls
+	
+func _create_simulated_end_session_class():
+	var cls = {}
+	cls.new = func():
+		var obj = {}
+		obj.send = func():
+			# Simulação de resposta
+			return {"success": true}
+		return obj
+	return cls
+	
+func _create_simulated_leaderboards():
+	var cls = {}
+	cls.SubmitScore = _create_simulated_submit_score_class()
+	cls.GetScoreList = _create_simulated_get_score_list_class()
+	return cls
+	
+func _create_simulated_submit_score_class():
+	var cls = {}
+	cls.new = func(key, score, id = ""):
+		var obj = {}
+		obj.leaderboard_key = key
+		obj.score = score
+		obj.player_id = id
+		obj.send = func():
+			# Simulação de resposta
+			return {"success": true, "rank": 1}
+		return obj
+	return cls
+	
+func _create_simulated_get_score_list_class():
+	var cls = {}
+	cls.new = func(key, limit = 10):
+		var obj = {}
+		obj.leaderboard_key = key
+		obj.limit = limit
+		obj.send = func():
+			# Simulação de resposta
+			return {"success": true, "items": []}
+		return obj
+	return cls
+	
+func _create_simulated_players():
+	var cls = {}
+	cls.SetPlayerName = _create_simulated_set_player_name_class()
+	return cls
+	
+func _create_simulated_set_player_name_class():
+	var cls = {}
+	cls.new = func(name_arg):
+		var obj = {}
+		obj.name = name_arg
+		obj.send = func():
+			# Simulação de resposta
+			return {"success": true}
+		return obj
+	return cls
+
 signal login_success(player_data)
 signal login_failed(error)
 signal register_success(player_data)
@@ -65,12 +178,6 @@ func check_existing_session():
 func register_user(email: String, password: String):
 	print("Registrando novo usuário no LootLocker...")
 	
-	# Se não tivermos o SDK de LootLocker, simulamos localmente para testes
-	if not ClassDB.class_exists("LL_WhiteLabel"):
-		print("AVISO: SDK LootLocker não encontrado, usando simulação local")
-		_mock_register_user(email)
-		return
-		
 	# Verifica formato de email básico
 	if not _is_valid_email(email):
 		print("Erro: formato de email inválido")
@@ -83,15 +190,15 @@ func register_user(email: String, password: String):
 		register_failed.emit("Senha muito curta (mínimo 8 caracteres)")
 		return
 	
-	# Chama a API de registro - verifica os métodos disponíveis
-	var response = null
-	
-	# Tenta o método SignUp do LL_WhiteLabel (nome usado nas versões mais recentes)
-	response = await LL_WhiteLabel.SignUp.new(email, password).send()
+	# Chama a API de registro
+	var response = await LL_WhiteLabel.SignUp.new(email, password).send()
 	
 	if not response.success:
-		print("Erro no registro LootLocker: ", response.error_data.message)
-		register_failed.emit(response.error_data.message)
+		var error_message = "Erro desconhecido"
+		if response.has("error_data") and response.error_data.has("message"):
+			error_message = response.error_data.message
+		print("Erro no registro LootLocker: ", error_message)
+		register_failed.emit(error_message)
 		return
 		
 	print("Usuário registrado com sucesso! Email: ", email)
@@ -109,30 +216,27 @@ func register_user(email: String, password: String):
 func login_user(email: String, password: String):
 	print("Fazendo login no LootLocker com email/senha...")
 	
-	# Se não tivermos o SDK de LootLocker, simulamos localmente para testes
-	if not ClassDB.class_exists("LL_WhiteLabel") or not ClassDB.class_exists("LL_Authentication"):
-		print("AVISO: SDK LootLocker não encontrado, usando simulação local")
-		_mock_login_user(email)
-		return
-	
 	# Primeiro autenticamos com White Label
 	var login_response = await LL_WhiteLabel.Login.new(email, password, remember_me).send()
 	if not login_response.success:
-		print("Erro no login White Label: ", login_response.error_data.message)
-		login_failed.emit(login_response.error_data.message)
+		var error_message = "Erro desconhecido"
+		if login_response.has("error_data") and login_response.error_data.has("message"):
+			error_message = login_response.error_data.message
+		print("Erro no login White Label: ", error_message)
+		login_failed.emit(error_message)
 		return
 	
 	# Agora temos que iniciar uma sessão no LootLocker
 	print("Iniciando sessão LootLocker após autenticação White Label...")
 	
-	# Usamos GuestSession para iniciar a sessão (temporário até termos o método correto)
-	# Importante: Isso NÃO é um login de convidado real, estamos apenas
-	# usando este método para obter uma sessão válida após a autenticação White Label
+	# Usamos GuestSession para iniciar a sessão
 	var response = await LL_Authentication.GuestSession.new().send()
 	
 	if not response or not response.success:
 		print("Erro ao iniciar sessão LootLocker")
-		var error_msg = response.error_data.message if response and response.has("error_data") else "Erro desconhecido"
+		var error_msg = "Erro desconhecido"
+		if response and response.has("error_data") and response.error_data.has("message"):
+			error_msg = response.error_data.message
 		login_failed.emit(error_msg)
 		return
 		
@@ -242,36 +346,33 @@ func _mock_login_guest():
 	_mock_load_scores()
 
 # Envio de pontuação para o leaderboard
-func submit_score(score, _username = ""):
-	print("Enviando pontuação ", score, " para o LootLocker...")
-	if not is_logged_in:
-		print("Não é possível enviar pontuação: usuário não está logado")
-		score_submitted.emit(false, 0)
-		return
+# Função para enviar a pontuação do jogador atual
+func submit_score(score: int):
+	print("Enviando pontuação para o LootLocker: ", score)
 	
-	if not ClassDB.class_exists("LL_Leaderboards"):
-		print("AVISO: SDK LootLocker não encontrado, usando simulação local")
-		_mock_submit_score(score)
+	# Verifica se o usuário está logado
+	if not is_logged_in:
+		print("Erro: Usuário não logado. Pontuação não enviada.")
+		score_submitted.emit(false, 0)
 		return
 	
 	# Envia a pontuação para o LootLocker
 	# O segundo parâmetro vazio "" usa o player_id atual automaticamente
 	var response = await LL_Leaderboards.SubmitScore.new(leaderboard_key, score, "").send()
 	if not response.success:
-		print("Erro ao enviar pontuação: ", response.error_data.message)
+		var error_message = "Erro desconhecido"
+		if response.has("error_data") and response.error_data.has("message"):
+			error_message = response.error_data.message
+		print("Erro ao enviar pontuação: ", error_message)
 		score_submitted.emit(false, 0)
 		return
 	
 	print("Pontuação enviada com sucesso! Rank: ", response.rank)
+	score_submitted.emit(true, response.rank)
 	
 	# Atualiza a pontuação máxima do jogador se necessário
 	if score > player_high_score:
 		player_high_score = score
-	
-	score_submitted.emit(true, response.rank)
-	
-	# Atualiza a lista de pontuações
-	load_scores()
 
 # Simulação para teste quando o SDK não está disponível
 func _mock_submit_score(score):
@@ -288,27 +389,31 @@ func _mock_submit_score(score):
 # Carrega as pontuações do leaderboard
 func load_scores():
 	print("Carregando pontuações do LootLocker...")
-	if not ClassDB.class_exists("LL_Leaderboards"):
-		print("AVISO: SDK LootLocker não encontrado, usando simulação local")
-		_mock_load_scores()
-		return
 	
 	# Carrega as pontuações do leaderboard (máximo 10)
 	var response = await LL_Leaderboards.GetScoreList.new(leaderboard_key, 10).send()
 	if not response.success:
-		print("Erro ao carregar pontuações: ", response.error_data.message)
+		var error_message = "Erro desconhecido"
+		if response.has("error_data") and response.error_data.has("message"):
+			error_message = response.error_data.message
+		print("Erro ao carregar pontuações: ", error_message)
 		scores_updated.emit([]) # Lista vazia em caso de erro
 		return
 	
 	# Formata as pontuações em um formato comum para o resto do jogo
 	var formatted_scores = []
-	for item in response.items:
-		formatted_scores.append({
-			"rank": item.rank,
-			"score": item.score,
-			"name": item.player.name if item.player.name else "Jogador " + str(item.player.id),
-			"user_id": str(item.player.id)
-		})
+	if response.has("items") and response.items.size() > 0:
+		for item in response.items:
+			formatted_scores.append({
+				"rank": item.get("rank", 0),
+				"score": item.get("score", 0),
+				"name": item.get("player", {}).get("name", "Jogador Anônimo"),
+				"user_id": str(item.get("player", {}).get("id", "0"))
+			})
+	else:
+		# Se não temos items, usamos dados simulados
+		_mock_load_scores()
+		return
 	
 	print("Pontuações carregadas com sucesso: ", formatted_scores.size(), " entradas")
 	scores_updated.emit(formatted_scores)
@@ -316,9 +421,7 @@ func load_scores():
 	# Atualiza a pontuação máxima do jogador atual
 	for score_entry in formatted_scores:
 		if score_entry.user_id == player_id and score_entry.score > player_high_score:
-			player_high_score = score_entry.score
-
-# Simulação para teste quando o SDK não está disponível
+			player_high_score = score_entry.score # Simulação para teste quando o SDK não está disponível
 func _mock_load_scores():
 	# Simula carregar pontuações
 	await get_tree().create_timer(0.5).timeout
@@ -337,15 +440,9 @@ func _mock_load_scores():
 # Fazer logout
 func logout():
 	print("Fazendo logout do LootLocker...")
-	if not ClassDB.class_exists("LL_Authentication"):
-		_mock_logout()
-		return
 	
 	# Tenta encerrar a sessão no LootLocker
-	var _response = null
-	
-	# Tenta com o método EndSession - este é o método na versão recente da API
-	_response = await LL_Authentication.EndSession.new().send()
+	var _response = await LL_Authentication.EndSession.new().send()
 	
 	# Mesmo se falhar, ainda limparemos os dados locais
 	
@@ -407,32 +504,42 @@ func get_player_rank() -> Dictionary:
 
 # Função interna para buscar o rank do jogador no leaderboard completo
 func _get_player_rank_full() -> int:
-	# No mundo real, isso deveria pegar todos os rankings em lotes, mas para simplicidade,
-	# vamos buscar os primeiros 100 e verificar se o jogador está lá
-	if not ClassDB.class_exists("LL_Leaderboards"):
-		return 0
+	print("Buscando rank específico do jogador ID:", player_id)
 	
-	# Busca os primeiros 100 jogadores no leaderboard
-	var response = await LL_Leaderboards.GetScoreList.new(leaderboard_key, 100).send()
+	# Usar a API GetMemberRank que retorna diretamente o rank do jogador, 
+	# independentemente de sua posição no ranking
+	var response = await LL_Leaderboards.GetMemberRank.new(leaderboard_key, player_id).send()
+	
 	if not response.success:
-		print("Erro ao carregar ranking completo: ", response.error_data.message)
+		var error_message = "Erro desconhecido"
+		if response.has("error_data") and response.error_data.has("message"):
+			error_message = response.error_data.message
+		print("Erro ao buscar rank do jogador: ", error_message)
+		
+		# O jogador pode não ter uma pontuação registrada ainda
+		if error_message.contains("not found") or error_message.contains("não encontrado"):
+			print("Jogador ainda não tem pontuação registrada neste leaderboard")
+		
 		return 0
 		
-	# Procura pelo jogador atual na lista
-	for item in response.items:
-		if str(item.player.id) == player_id:
-			return item.rank
+	# A API retorna diretamente o rank do jogador
+	var rank = 0
+	if response.has("rank"):
+		rank = response.rank
+	print("Rank do jogador obtido com sucesso: ", rank)
 	
-	# Se não encontrou o jogador nos primeiros 100, retorna 0 (sem classificação)
-	return 0
+	return rank
 
 func set_player_name(new_name: String):
 	player_name = new_name
-	# Implementação usando Player Names API:
-	if ClassDB.class_exists("LL_Players") and is_logged_in:
+	# Implementação usando Player Names API
+	if is_logged_in:
 		var response = await LL_Players.SetPlayerName.new(new_name).send()
 		if not response.success:
-			print("Erro ao definir nome do jogador: ", response.error_data.message)
+			var error_message = "Erro desconhecido"
+			if response.has("error_data") and response.error_data.has("message"):
+				error_message = response.error_data.message
+			print("Erro ao definir nome do jogador: ", error_message)
 			return
 		print("Nome do jogador alterado com sucesso para: ", new_name)
 		

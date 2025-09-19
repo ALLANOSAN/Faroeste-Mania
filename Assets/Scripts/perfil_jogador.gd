@@ -155,21 +155,56 @@ func atualizar_rank_jogador():
 	
 	# Mostra indicador de carregamento
 	player_rank_label.text = "Carregando rank..."
+	player_rank_label.modulate = Color(1, 1, 0) # Amarelo para indicar carregamento
 	
 	# Obtem o rank do jogador (função assíncrona)
 	var rank_info = await global.get_player_rank()
 	var high_score = global.get_player_high_score()
 	
 	if rank_info.rank > 0:
-		player_rank_label.text = "%dº Lugar no Ranking Global" % rank_info.rank
+		# Define a cor com base na posição
+		var cor_texto = Color(1, 1, 1) # Branco padrão
+		var texto_medalha = ""
+		var texto_adicional = ""
 		
-		# Se o rank for maior que 10, adiciona uma mensagem especial
-		if rank_info.rank > 10:
-			player_rank_label.text += "\n(Fora do Top 10 mostrado na tabela principal)"
+		# Personaliza a exibição com base no ranking
+		if rank_info.rank == 1:
+			cor_texto = Color(1, 0.84, 0) # Dourado
+			texto_medalha = "🏆 CAMPEÃO GLOBAL! 🏆"
+			player_rank_label.text = texto_medalha
+		elif rank_info.rank == 2:
+			cor_texto = Color(0.75, 0.75, 0.75) # Prata
+			texto_medalha = " 🥈"
+			player_rank_label.text = "%dº Lugar no Ranking Global%s" % [rank_info.rank, texto_medalha]
+		elif rank_info.rank == 3:
+			cor_texto = Color(0.8, 0.5, 0.2) # Bronze
+			texto_medalha = " 🥉"
+			player_rank_label.text = "%dº Lugar no Ranking Global%s" % [rank_info.rank, texto_medalha]
+		elif rank_info.rank <= 10:
+			cor_texto = Color(0, 0.8, 0.2) # Verde para top 10
+			player_rank_label.text = "%dº Lugar - Top 10 Global!" % rank_info.rank
+		else:
+			# Para ranks acima de 10
+			cor_texto = Color(1, 0.7, 0.7) # Vermelho claro
+			texto_adicional = "\n(Jogue mais para entrar no Top 10!)"
+			player_rank_label.text = "%dº Lugar no Ranking Global%s" % [rank_info.rank, texto_adicional]
+		
+		player_rank_label.modulate = cor_texto
 	else:
-		player_rank_label.text = "Sem classificação ainda"
+		player_rank_label.text = "Sem classificação ainda\nJogue para entrar no ranking!"
+		player_rank_label.modulate = Color(0.8, 0.8, 0.8) # Cinza
 		
-	player_score_label.text = "%d pontos" % high_score
+	# Exibe a pontuação com formatação
+	if high_score > 0:
+		if high_score >= 1000:
+			player_score_label.text = "🔥 %d pontos 🔥" % high_score
+			player_score_label.modulate = Color(1, 0.5, 0) # Laranja para pontuações altas
+		else:
+			player_score_label.text = "%d pontos" % high_score
+			player_score_label.modulate = Color(1, 0.8, 0) # Amarelo dourado
+	else:
+		player_score_label.text = "0 pontos (Jogue para pontuar!)"
+		player_score_label.modulate = Color(0.7, 0.7, 0.7) # Cinza
 	
 func _apply_platform_specific_settings():
 	"""Aplica configurações específicas para a plataforma atual"""

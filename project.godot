@@ -24,6 +24,7 @@ id_token="eyJhbGciOiJSUzI1NiIsImtpZCI6ImUzZWU3ZTAyOGUzODg1YTM0NWNlMDcwNTVmODQ2OD
 
 Global="*res://Assets/Scripts/Global.gd"
 LootLockerManager="*res://Assets/Scripts/LootLockerManager.gd"
+LootLockerSDK="*res://addons/LootLockerSDK/LootLockerSDK.gd"
 
 [debug]
 
