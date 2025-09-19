@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b324xojkbl53s"]
 
-[ext_resource type="Script" path="res://Assets/Scripts/signup_script.gd" id="1_yem4c"]
-[ext_resource type="Texture2D" uid="uid://dgs3pco6ck3a8" path="res://Assets/Art/Faroiest.jpg" id="2_7oww2"]
+[ext_resource type="Script" uid="uid://emglp3na5veo" path="res://Assets/Scripts/signup_script.gd" id="1_yem4c"]
+[ext_resource type="Texture2D" uid="uid://cx37gryegxi5x" path="res://Assets/Art/Faroiest.jpg" id="2_7oww2"]
 
 [node name="RegisterScreen" type="Control"]
 layout_mode = 3
