@@ -10,7 +10,7 @@ var player_data = {
 }
 
 # Referência ao gerenciador LootLocker
-@onready var loot_locker_manager = get_node_or_null("/root/LootLockerManager")
+var loot_locker_manager = null
 
 # Sistema de detecção de plataforma
 class PlatformDetector:
@@ -42,6 +42,13 @@ var Platform = PlatformDetector.new()
 
 func _ready():
 	print("Global script inicializado")
+	
+	# Usa call_deferred para garantir que todos os autoloads estejam carregados
+	call_deferred("_connect_to_loot_locker")
+
+func _connect_to_loot_locker():
+	# Tenta obter a referência ao LootLockerManager
+	loot_locker_manager = get_node_or_null("/root/LootLockerManager")
 	
 	# Se o LootLockerManager existe, conectamos aos sinais
 	if loot_locker_manager:
@@ -130,9 +137,12 @@ func _on_auth_state_changed(is_logged_in):
 	auth_state_changed.emit(is_logged_in)
 
 func _on_login_success(user_data):
-	# Atualiza os dados do jogador
-	player_data.id = user_data.player_id
-	player_data.name = user_data.player_name
-	
-	# Emite o sinal de dados atualizados
-	user_data_updated.emit(player_data)
+	# Atualiza os dados do jogador com verificação de segurança
+	if user_data != null:
+		player_data.id = user_data.get("player_id", "")
+		player_data.name = user_data.get("player_name", "")
+		
+		# Emite o sinal de dados atualizados
+		user_data_updated.emit(player_data)
+	else:
+		print("AVISO: user_data é nulo em _on_login_success")
