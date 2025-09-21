@@ -15,7 +15,6 @@ var alvo_ativo = false
 var tempo_restante = 0
 
 # Referência aos gerenciadores
-@onready var loot_locker = get_node("/root/LootLockerManager")
 @onready var global = get_node("/root/Global")
 
 # Referências de nós
@@ -214,7 +213,7 @@ func game_over():
 		"rank_salvo": false # Inicialmente definimos como falso
 	}
 	
-	# Salva a pontuação usando LootLocker
+	# Salva a pontuação usando Firebase
 	print("Salvando pontuação de %d diretamente do mapa_jogo.gd..." % pontos)
 	salvar_pontuacao(pontos)
 	# Marca que o rank foi salvo para informar na tela de game over
@@ -227,8 +226,8 @@ func game_over():
 	# Vai para a tela de game over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
 
-# Salva a pontuação usando o LootLocker
+# Salva a pontuação usando o Firebase
 func salvar_pontuacao(pontuacao):
-	print("Salvando pontuação de %d no LootLocker..." % pontuacao)
-	# Corrigido: usando a função correta do global
+	print("Salvando pontuação de %d no Firebase..." % pontuacao)
+	# Usando a função do global
 	global.submit_score(pontuacao)

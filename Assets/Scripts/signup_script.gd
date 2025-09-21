@@ -2,7 +2,6 @@ extends Control
 
 @onready var feedback_text = %FeedbackText2
 @onready var global = get_node("/root/Global")
-@onready var loot_locker = get_node("/root/LootLockerManager")
 
 # Referências aos campos de entrada
 @onready var display_name_input = %display_name
@@ -36,35 +35,21 @@ func _on_button_pressed() -> void:
 	
 	feedback_text.text = "Registrando..."
 	
-	# No LootLocker agora estamos usando White Label Authentication
+	# Usando Firebase para autenticação
 	global.register_user(email, password)
 	
-	# O display_name será salvo após o login bem-sucedido
-	# Conectamos ao sinal de registro bem-sucedido para definir o nome de exibição
-	# Este callback será executado quando a autenticação for concluída com sucesso
-	loot_locker.register_success.connect(func(_data): # Usando underscore para indicar que não usamos o parâmetro
-		# De acordo com o SDK oficial, após a autenticação, definimos o nome do jogador
-		print("Definindo nome de exibição do jogador: " + display_name)
-		# Esta chamada usa internamente LL_Players.SetPlayerName.new(nome).send()
-		# Em Godot 4.x, podemos simplesmente usar await diretamente
-		var resposta = await loot_locker.set_player_name(display_name)
-		
-		# Verificamos se o nome foi definido com sucesso
-		# Isso é importante porque o LootLockerManager.gd verifica o sucesso da chamada
-		if resposta and resposta.success:
-			print("Nome do jogador definido com sucesso para: " + display_name)
-		else:
-			print("Erro ao definir nome do jogador")
-	, CONNECT_ONE_SHOT)
+	# Armazena o nome de exibição no auth.gd
+	print("Registrando usuário com nome de exibição: " + display_name)
+	
+	# Salva o display_name para uso na função on_signup_succeeded em auth.gd
+	Firebase.Auth.signup_with_email_and_password(email, password)
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")
 	
 func _ready():
-	# Conectar sinais
-	loot_locker.register_success.connect(_on_register_success)
-	loot_locker.register_failed.connect(_on_register_failed)
-	
+	# TO-DO: Conectar sinais do Firebase
+	# Configurar os callbacks para sucesso e falha do registro
 	# Conectar o sinal do botão de login
 	login_button.pressed.connect(_on_button_pressed)
 	# Conectar o sinal do botão de voltar
@@ -80,10 +65,10 @@ func _on_register_success(_user_data): # Usando underscore para indicar que não
 	feedback_text.text = "Registro concluído com sucesso!"
 	
 	# Não estamos usando os dados do usuário diretamente nesta função
-	# O registro e login são gerenciados automaticamente pelo LootLockerManager
+	# O registro e login serão gerenciados pelo Firebase
 	
 	# Após sucesso, navegamos para a tela principal do jogo (se necessário)
-	# O LootLockerManager.gd já faz a maioria dos processos automaticamente
+	# Precisará implementar a lógica de autenticação completa com Firebase
 	
 func _on_register_failed(error_message):
 	feedback_text.text = "Falha no registro: " + error_message

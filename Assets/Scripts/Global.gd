@@ -2,15 +2,13 @@ extends Node
 
 signal auth_state_changed(is_logged_in)
 signal user_data_updated(user_data)
+signal scores_updated(scores_data)
 
 var player_data = {
 	"id": "",
 	"name": "",
 	"high_score": 0
 }
-
-# Referência ao gerenciador LootLocker
-var loot_locker_manager = null
 
 # Sistema de detecção de plataforma
 class PlatformDetector:
@@ -42,107 +40,242 @@ var Platform = PlatformDetector.new()
 
 func _ready():
 	print("Global script inicializado")
-	
-	# Usa call_deferred para garantir que todos os autoloads estejam carregados
-	call_deferred("_connect_to_loot_locker")
-
-func _connect_to_loot_locker():
-	# Tenta obter a referência ao LootLockerManager
-	loot_locker_manager = get_node_or_null("/root/LootLockerManager")
-	
-	# Se o LootLockerManager existe, conectamos aos sinais
-	if loot_locker_manager:
-		loot_locker_manager.auth_state_changed.connect(_on_auth_state_changed)
-		loot_locker_manager.login_success.connect(_on_login_success)
-		loot_locker_manager.register_success.connect(_on_login_success) # Reutiliza o mesmo callback
-		print("Conectado aos sinais do LootLockerManager")
-		
-		# Verifica se já há uma sessão anterior salva
-		# A verificação é feita automaticamente no _ready() do LootLockerManager
-	else:
-		print("ERRO: LootLockerManager não encontrado!")
 
 # Funções de autenticação
 func login_guest():
-	if loot_locker_manager:
-		loot_locker_manager.login_guest()
-	else:
-		print("ERRO: Não foi possível fazer login, LootLockerManager não disponível")
+	print("Função login_guest não implementada")
 
 func logout():
-	if loot_locker_manager:
-		loot_locker_manager.logout()
-	else:
-		print("ERRO: Não foi possível fazer logout, LootLockerManager não disponível")
+	# O logout será implementado no auth.gd
+	# O script auth.gd cuidará de chamar Firebase.Auth.logout()
+	# Emitimos apenas o sinal de mudança de estado
+	auth_state_changed.emit(false)
+	print("Logout realizado")
 
 # Função para verificar se o usuário está logado
 func is_user_logged_in():
-	if loot_locker_manager:
-		return loot_locker_manager.is_logged_in
+	# Verifica no Firebase
+	if Firebase and Firebase.Auth and Firebase.Auth.check_auth_file():
+		return true
 	return false
 
 # Função para obter o ID do usuário atual
 func get_current_user_id():
-	if loot_locker_manager:
-		return loot_locker_manager.get_user_id()
+	"""Retorna o ID do usuário atualmente logado no Firebase"""
+	if not Firebase or not Firebase.Auth:
+		return ""
+		
+	var auth = Firebase.Auth.get_user_data()
+	if auth and auth.has("localid"):
+		return auth.localid
 	return ""
 
 # Função para obter o nome do usuário atual
 func get_player_name():
-	if loot_locker_manager:
-		return loot_locker_manager.get_player_name()
-	return "Visitante"
+	"""Retorna o nome do usuário atual do Firestore"""
+	if not is_user_logged_in():
+		return "Visitante"
+		
+	var user_id = get_current_user_id()
+	if user_id.is_empty():
+		return "Visitante"
+		
+	# Primeiro, verifica se já temos o nome em cache
+	if player_data.name and not player_data.name.is_empty():
+		return player_data.name
+		
+	# Se não temos em cache, busca do Firestore (isso será assíncrono)
+	# Nota: Como essa função não é async, o nome será atualizado depois
+	# e estará disponível apenas na próxima chamada
+	var user_collection = Firebase.Firestore.collection("users")
+	
+	user_collection.get_doc(user_id).then(func(doc):
+		if doc and doc.has_field("display_name"):
+			player_data.name = doc.get_value("display_name")
+			# Notifica que os dados do usuário foram atualizados
+			user_data_updated.emit(player_data)
+	).catch(func(error):
+		print("Erro ao buscar nome do usuário: " + str(error))
+	)
+	
+	# Retorna o valor atual (que pode ser atualizado posteriormente)
+	return player_data.name if not player_data.name.is_empty() else "Jogador " + user_id.substr(0, 5)
 
 # Função para obter a pontuação máxima do jogador
 func get_player_high_score():
-	if loot_locker_manager:
-		return loot_locker_manager.get_player_high_score()
+	# Implementar com Firebase
 	return 0
 	
 # Função para obter o rank do jogador atual
 func get_player_rank() -> Dictionary:
-	if loot_locker_manager:
-		return await loot_locker_manager.get_player_rank()
-	return {"rank": 0, "total": 0}
+	"""Retorna o rank do jogador baseado no leaderboard"""
+	if not is_user_logged_in():
+		return {"rank": 0, "total": 0}
+		
+	var user_id = get_current_user_id()
+	if user_id.is_empty():
+		return {"rank": 0, "total": 0}
+		
+	# Consulta o Firestore para obter todos os usuários ordenados por pontuação
+	var query = FirestoreQuery.new()
+	query.from("users")
+	query.order_by("score", FirestoreQuery.DIRECTION.DESCENDING)
+	
+	var result = await Firebase.Firestore.query(query)
+	var rank = 0
+	var total = result.size()
+	
+	# Procura o usuário na lista para determinar o rank
+	for i in range(total):
+		if result[i].doc_name == user_id:
+			rank = i + 1 # +1 porque o índice começa em 0 mas o rank começa em 1
+			break
+	
+	return {"rank": rank, "total": total}
 
 # Funções de pontuação
 func submit_score(score):
-	if loot_locker_manager:
-		loot_locker_manager.submit_score(score)
-	else:
-		print("ERRO: Não foi possível enviar pontuação, LootLockerManager não disponível")
+	"""Envia a pontuação do jogador para o Firestore"""
+	if not is_user_logged_in():
+		print("Erro: É necessário estar logado para enviar pontuações")
+		return
+		
+	var user_id = get_current_user_id()
+	if user_id.is_empty():
+		print("Erro: ID de usuário inválido")
+		return
+		
+	print("Enviando pontuação: " + str(score))
+	
+	# Primeiro, busca o documento do usuário para verificar se já existe
+	var user_collection = Firebase.Firestore.collection("users")
+	
+	user_collection.get_doc(user_id).then(func(doc):
+		if doc:
+			# Documento existe, verifica se a nova pontuação é maior
+			var current_score = doc.get_value("score") if doc.has_field("score") else 0
+			
+			if score > current_score:
+				# Atualiza a pontuação
+				doc.add_or_update_field("score", score)
+				doc.add_or_update_field("updated_at", Time.get_unix_time_from_system())
+				
+				Firebase.Firestore.update(doc.doc_name, {"score": score, "updated_at": Time.get_unix_time_from_system()}, "users").then(func(_result):
+					print("Pontuação atualizada com sucesso")
+					# Recarrega o leaderboard para atualizar
+					load_leaderboard()
+				).catch(func(error):
+					print("Erro ao atualizar pontuação: " + str(error))
+				)
+			else:
+				print("Pontuação atual (" + str(current_score) + ") é maior que a nova (" + str(score) + "). Não atualizada.")
+		else:
+			# Documento não existe, cria um novo
+			var user_data = {
+				"display_name": get_player_name(),
+				"score": score,
+				"created_at": Time.get_unix_time_from_system(),
+				"updated_at": Time.get_unix_time_from_system()
+			}
+			
+			Firebase.Firestore.add("users", user_id, user_data).then(func(_result):
+				print("Novo documento de usuário criado com pontuação")
+				# Recarrega o leaderboard para atualizar
+				load_leaderboard()
+			).catch(func(error):
+				print("Erro ao criar documento de usuário: " + str(error))
+			)
+	).catch(func(error):
+		print("Erro ao buscar documento do usuário: " + str(error))
+	)
 
 func load_leaderboard():
-	if loot_locker_manager:
-		loot_locker_manager.load_scores()
-	else:
-		print("ERRO: Não foi possível carregar pontuações, LootLockerManager não disponível")
+	"""Carrega o leaderboard do Firestore"""
+	if not Firebase or not Firebase.Firestore:
+		print("Erro: Firebase ou Firestore não disponível")
+		return
+	
+	print("Carregando leaderboard do Firestore...")
+	
+	var query = FirestoreQuery.new()
+	query.from("users")
+	query.order_by("score", FirestoreQuery.DIRECTION.DESCENDING)
+	query.limit(100)
+	
+	var results = []
+	
+	# Executa a consulta no Firestore
+	Firebase.Firestore.query(query).then(func(query_results):
+		if query_results:
+			# Processa cada documento nos resultados
+			for doc in query_results:
+				var player_data = {
+					"user_id": doc.doc_name,
+					"name": doc.get_value("display_name") if doc.has_field("display_name") else "Jogador Anônimo",
+					"score": doc.get_value("score") if doc.has_field("score") else 0
+				}
+				results.append(player_data)
+			
+			# Emite o sinal com os resultados
+			scores_updated.emit(results)
+			print("Leaderboard carregado com sucesso: " + str(results.size()) + " jogadores")
+		else:
+			print("Nenhum resultado encontrado no leaderboard")
+			scores_updated.emit([])
+	).catch(func(error):
+		print("Erro ao carregar leaderboard: " + str(error))
+		scores_updated.emit([])
+	)
 
 # Funções de autenticação com email e senha
 func register_user(email: String, password: String):
-	if loot_locker_manager:
-		loot_locker_manager.register_user(email, password)
-	else:
-		print("ERRO: Não foi possível registrar usuário, LootLockerManager não disponível")
+	"""Registra um novo usuário no Firebase Auth"""
+	if not Firebase or not Firebase.Auth:
+		print("Erro: Firebase ou Auth não disponível")
+		return
+		
+	print("Registrando usuário: " + email)
+	Firebase.Auth.signup_with_email_and_password(email, password)
 
 func login_user(email: String, password: String):
-	if loot_locker_manager:
-		loot_locker_manager.login_user(email, password)
-	else:
-		print("ERRO: Não foi possível fazer login, LootLockerManager não disponível")
+	"""Faz login de um usuário no Firebase Auth"""
+	if not Firebase or not Firebase.Auth:
+		print("Erro: Firebase ou Auth não disponível")
+		return
+		
+	print("Fazendo login do usuário: " + email)
+	Firebase.Auth.login_with_email_and_password(email, password)
 
 # Callbacks
 func _on_auth_state_changed(is_logged_in):
 	# Repassa o sinal
 	auth_state_changed.emit(is_logged_in)
 
-func _on_login_success(user_data):
-	# Atualiza os dados do jogador com verificação de segurança
+# Esta função será implementada para o Firebase
+func update_user_data(user_data):
+	# Atualiza os dados do jogador
 	if user_data != null:
-		player_data.id = user_data.get("player_id", "")
-		player_data.name = user_data.get("player_name", "")
+		player_data.id = user_data.get("id", "")
+		player_data.name = user_data.get("name", "")
 		
 		# Emite o sinal de dados atualizados
 		user_data_updated.emit(player_data)
 	else:
-		print("AVISO: user_data é nulo em _on_login_success")
+		print("AVISO: user_data é nulo em update_user_data")
+
+# Função para limpar a sessão (logout + apagar dados)
+func clear_session():
+	# Primeiro faz logout
+	logout()
+	
+	# Limpa dados do player
+	player_data = {
+		"id": "",
+		"name": "",
+		"high_score": 0
+	}
+	
+	print("Sessão e dados do usuário removidos")
+	
+	# Emite sinal de atualização dos dados
+	user_data_updated.emit(player_data)

@@ -4,7 +4,6 @@ extends Control
 @onready var loading_label = %LoadingLabel
 @onready var voltar_button = %BotaoVoltar
 @onready var global = get_node("/root/Global")
-@onready var loot_locker = get_node("/root/LootLockerManager")
 
 # Referências para as texturas de medalhas
 @onready var medal_gold = preload("res://Assets/Art/medalhaouro.png")
@@ -13,11 +12,11 @@ extends Control
 @onready var background_texture = preload("res://Assets/Art/Sem título-1.png")
 
 func _ready():
-	# Conecta ao sinal de pontuações atualizadas
-	loot_locker.scores_updated.connect(_on_scores_updated)
-	
 	# Conecta botão de voltar
 	voltar_button.pressed.connect(_on_voltar_pressed)
+	
+	# Conecta o sinal de scores_updated
+	global.scores_updated.connect(_on_scores_updated)
 	
 	# Carrega as pontuações
 	loading_label.text = "Carregando pontuações..."
@@ -116,7 +115,7 @@ func add_score_row(pos_rank, score_data):
 	
 	# Nome do jogador
 	var name_label = Label.new()
-	name_label.text = score_data.name # Adaptado para o formato do LootLocker
+	name_label.text = score_data.name # Nome do jogador
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.size_flags_stretch_ratio = 2.5
 	name_label.clip_text = true # Corta o texto se for muito longo

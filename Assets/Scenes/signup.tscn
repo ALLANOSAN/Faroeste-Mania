@@ -76,7 +76,7 @@ max_length = 50
 layout_mode = 2
 text = "Email:"
 
-[node name="username" type="LineEdit" parent="VBoxContainer"]
+[node name="email" type="LineEdit" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Seu email"

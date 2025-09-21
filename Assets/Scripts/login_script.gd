@@ -2,7 +2,6 @@ extends Control
 
 @onready var feedback_text = %FeedbackText
 @onready var global = get_node("/root/Global")
-@onready var loot_locker = get_node("/root/LootLockerManager")
 
 # Referências aos campos de entrada
 @onready var email_field = %username
@@ -11,10 +10,6 @@ extends Control
 @onready var signup_button = %signup_button
 
 func _ready():
-	# Conectamos ao sinal de mudança no estado de autenticação
-	loot_locker.auth_state_changed.connect(_on_auth_state_changed)
-	loot_locker.login_failed.connect(_on_login_failed)
-	
 	# Verificamos se o usuário já está autenticado
 	if global.is_user_logged_in():
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")

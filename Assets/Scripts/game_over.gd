@@ -4,7 +4,6 @@ extends Control
 @onready var button_retry = %botao_tentar_novamente
 @onready var button_leaderboard = %botao_classificacao
 @onready var button_tela_inicial = %botao_tela_inicial
-@onready var loot_locker_manager = get_node("/root/LootLockerManager")
 @onready var global = get_node("/root/Global")
 
 var pontuacao_final = 0

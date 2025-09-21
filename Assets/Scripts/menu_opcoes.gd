@@ -4,7 +4,6 @@ extends Control
 @onready var botao_som = %BTChamarMenuSom
 @onready var botao_leaderboard = %BTChamarMenuLeadboard
 @onready var botao_perfil = %BTPerfilJogador
-@onready var loot_locker_manager = get_node("/root/LootLockerManager")
 @onready var global = get_node("/root/Global")
 
 func _ready():
