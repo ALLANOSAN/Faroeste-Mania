@@ -2,6 +2,7 @@ extends Control
 
 @onready var feedback_text = %FeedbackText2
 @onready var global = get_node("/root/Global")
+@onready var auth = get_node("/root/Auth")
 
 # Referências aos campos de entrada
 @onready var display_name_input = %display_name
@@ -29,20 +30,11 @@ func _on_button_pressed() -> void:
 		feedback_text.text = "A senha deve ter pelo menos 8 caracteres"
 		return
 		
-	if !email.contains("@") or !email.contains("."):
+	if !_is_valid_email(email):
 		feedback_text.text = "Digite um email válido"
 		return
-	
 	feedback_text.text = "Registrando..."
-	
-	# Usando Firebase para autenticação
-	global.register_user(email, password)
-	
-	# Armazena o nome de exibição no auth.gd
-	print("Registrando usuário com nome de exibição: " + display_name)
-	
-	# Salva o display_name para uso na função on_signup_succeeded em auth.gd
-	Firebase.Auth.signup_with_email_and_password(email, password)
+	auth._on_sign_up_button_pressed()
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")
@@ -93,3 +85,9 @@ func _apply_platform_specific_settings():
 		# Otimizações para desktop
 		print("Aplicando configurações de UI para desktop na tela de registro...")
 		# Manter tamanhos padrão para uso com mouse
+
+func _is_valid_email(email: String) -> bool:
+	# Regex simples para validar e-mails
+	var regex = RegEx.new()
+	regex.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+	return regex.search(email) != null

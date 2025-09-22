@@ -17,13 +17,13 @@ func _ready():
 
 
 func _on_login_button_pressed():
-	var email = %display_name.text
+	var email = %EmailLabel.text
 	var password = %password.text
 	Firebase.Auth.login_with_email_and_password(email, password)
 
 
 func _on_sign_up_button_pressed():
-	var email = %display_name.text
+	var email = %EmailLabel.text
 	var password = %password.text
 	Firebase.Auth.signup_with_email_and_password(email, password)
 

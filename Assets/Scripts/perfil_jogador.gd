@@ -34,52 +34,27 @@ func _ready():
 func load_player_info():
 	"""Carrega e exibe as informações do jogador"""
 	if global.is_user_logged_in():
-		# Mostra ID do jogador
 		player_id_value.text = global.get_current_user_id()
-		
-		# Busca os dados do usuário diretamente do Firestore
-		var user_id = global.get_current_user_id()
-		var user_collection = Firebase.Firestore.collection("users")
-		
 		show_status("Carregando perfil...", Color(1, 1, 0))
-		
-		user_collection.get_doc(user_id).then(func(doc):
-			if doc:
-				# Se o documento existe, usa o display_name do Firestore
-				if doc.has_field("display_name"):
-					var display_name = doc.get_value("display_name")
-					username_input.text = display_name
-					
-					# Atualiza o cache global
-					global.player_data.name = display_name
-					global.user_data_updated.emit(global.player_data)
-					
-					show_status("Perfil carregado com sucesso!", Color(0, 1, 0))
-				else:
-					# Se não tem display_name, usa um nome padrão
-					username_input.text = "Jogador " + user_id.substr(0, 5)
-					show_status("Nome de usuário não configurado", Color(1, 1, 0))
-				
-				# Se o documento tem score, atualiza a pontuação
-				if doc.has_field("score"):
-					player_score_label.text = "Sua pontuação: " + str(doc.get_value("score"))
-				else:
-					player_score_label.text = "Pontuação: 0"
-			else:
-				# Se o documento não existe, mostra nome padrão
-				username_input.text = "Jogador " + user_id.substr(0, 5)
-				player_score_label.text = "Pontuação: 0"
-				show_status("Perfil ainda não criado", Color(1, 0.6, 0))
-				
-			# Atualiza as informações de rank e pontuação
-			atualizar_rank_jogador()
-		).catch(func(error):
-			username_input.text = "Jogador " + user_id.substr(0, 5)
-			show_status("Erro ao carregar perfil", Color(1, 0, 0))
-			print("Erro ao carregar perfil: " + str(error))
-		)
+		# Usa o nome do Global.gd
+		var nome = global.get_player_name()
+		if nome and not nome.is_empty():
+			username_input.text = nome
+			show_status("Perfil carregado com sucesso!", Color(0, 1, 0))
+		else:
+			username_input.text = "Jogador " + global.get_current_user_id().substr(0, 5)
+			show_status("Nome de usuário não configurado", Color(1, 1, 0))
+
+		# Usa o score do Global.gd
+		var score = global.get_player_high_score()
+		if score > 0:
+			player_score_label.text = "Sua pontuação: " + str(score)
+		else:
+			player_score_label.text = "Pontuação: 0"
+
+		# Atualiza as informações de rank e pontuação
+		atualizar_rank_jogador()
 	else:
-		# Se não estiver logado, volta para o menu principal
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
 func _on_scores_updated(scores_data):
@@ -156,62 +131,20 @@ func _on_save_username_pressed():
 	# Mostra status de salvamento
 	show_status("Salvando nome de usuário...", Color(1, 1, 0))
 	
-	# Salva o nome do jogador usando Firebase Firestore
+	# Salva o nome do jogador usando função centralizada do Global.gd
 	var user_id = global.get_current_user_id()
-	
 	if user_id.is_empty():
 		show_status("Erro: Usuário não logado!", Color(1, 0, 0))
 		return
-		
-	# Primeiro verifica se o documento do usuário já existe
-	var user_collection = Firebase.Firestore.collection("users")
-	
-	user_collection.get_doc(user_id).then(func(doc):
-		if doc:
-			# Documento existe, atualiza o nome
-			doc.add_or_update_field("display_name", new_username)
-			doc.add_or_update_field("updated_at", Time.get_unix_time_from_system())
-			
-			Firebase.Firestore.update(doc.doc_name, {"display_name": new_username, "updated_at": Time.get_unix_time_from_system()}, "users").then(func(_result):
-				# Atualiza o nome no cache global
-				global.player_data.name = new_username
-				global.user_data_updated.emit(global.player_data)
-				
-				show_status("Nome de usuário alterado com sucesso!", Color(0, 1, 0))
-				print("Nome de usuário alterado para: " + new_username)
-				
-				# Recarrega o leaderboard para refletir a alteração
-				global.load_leaderboard()
-			).catch(func(error):
-				show_status("Erro ao atualizar nome de usuário!", Color(1, 0, 0))
-				print("Erro ao atualizar nome de usuário: " + str(error))
-			)
+
+	# Chama função centralizada (você pode implementar set_player_name em Global.gd)
+	global.set_player_name(new_username, func(success, msg):
+		if success:
+			show_status("Nome de usuário alterado com sucesso!", Color(0, 1, 0))
+			print("Nome de usuário alterado para: " + new_username)
+			global.load_leaderboard()
 		else:
-			# Documento não existe, cria um novo
-			var user_data = {
-				"display_name": new_username,
-				"score": 0,
-				"created_at": Time.get_unix_time_from_system(),
-				"updated_at": Time.get_unix_time_from_system()
-			}
-			
-			Firebase.Firestore.add("users", user_id, user_data).then(func(_result):
-				# Atualiza o nome no cache global
-				global.player_data.name = new_username
-				global.user_data_updated.emit(global.player_data)
-				
-				show_status("Nome de usuário criado com sucesso!", Color(0, 1, 0))
-				print("Novo usuário criado com nome: " + new_username)
-				
-				# Recarrega o leaderboard para refletir a alteração
-				global.load_leaderboard()
-			).catch(func(error):
-				show_status("Erro ao criar perfil de usuário!", Color(1, 0, 0))
-				print("Erro ao criar perfil de usuário: " + str(error))
-			)
-	).catch(func(error):
-		show_status("Erro ao verificar perfil de usuário!", Color(1, 0, 0))
-		print("Erro ao verificar perfil de usuário: " + str(error))
+			show_status(msg, Color(1, 0, 0))
 	)
 
 func _handle_logout():
@@ -293,68 +226,51 @@ func atualizar_rank_jogador():
 	player_rank_label.text = "Carregando rank..."
 	player_rank_label.modulate = Color(1, 1, 0) # Amarelo para indicar carregamento
 	
-	# Obtem o rank do jogador do Firebase
+	# Obtem o rank e score do jogador via Global.gd
 	var rank_info = await global.get_player_rank()
-	
-	# Busca a pontuação do jogador no Firestore
-	var user_id = global.get_current_user_id()
-	var user_collection = Firebase.Firestore.collection("users")
-	var high_score = 0
-	
-	var user_doc = await user_collection.get_doc(user_id)
-	if user_doc and user_doc.has_field("score"):
-		high_score = user_doc.get_value("score")
-		player_score_label.text = "Sua pontuação: " + str(high_score)
-	
+	var high_score = global.get_player_high_score()
+
+	if high_score > 0:
+		if high_score >= 1000:
+			player_score_label.text = "🔥 %d pontos 🔥" % high_score
+			player_score_label.modulate = Color(1, 0.5, 0)
+		else:
+			player_score_label.text = "%d pontos" % high_score
+			player_score_label.modulate = Color(1, 0.8, 0)
+	else:
+		player_score_label.text = "0 pontos (Jogue para pontuar!)"
+		player_score_label.modulate = Color(0.7, 0.7, 0.7)
+
 	if rank_info.rank > 0:
-		# Define a cor com base na posição
-		var cor_texto = Color(1, 1, 1) # Branco padrão
+		var cor_texto = Color(1, 1, 1)
 		var texto_medalha = ""
 		var texto_adicional = ""
-		
-		# Personaliza a exibição com base no ranking
 		if rank_info.rank == 1:
-			cor_texto = Color(1, 0.84, 0) # Dourado
+			cor_texto = Color(1, 0.84, 0)
 			texto_medalha = "🏆 CAMPEÃO GLOBAL! 🏆"
 			player_rank_label.text = texto_medalha
 		elif rank_info.rank == 2:
-			cor_texto = Color(0.75, 0.75, 0.75) # Prata
+			cor_texto = Color(0.75, 0.75, 0.75)
 			texto_medalha = " 🥈"
 			player_rank_label.text = "%dº Lugar no Ranking Global%s" % [rank_info.rank, texto_medalha]
 		elif rank_info.rank == 3:
-			cor_texto = Color(0.8, 0.5, 0.2) # Bronze
+			cor_texto = Color(0.8, 0.5, 0.2)
 			texto_medalha = " 🥉"
 			player_rank_label.text = "%dº Lugar no Ranking Global%s" % [rank_info.rank, texto_medalha]
 		elif rank_info.rank <= 10:
-			cor_texto = Color(0, 0.8, 0.2) # Verde para top 10
+			cor_texto = Color(0, 0.8, 0.2)
 			player_rank_label.text = "%dº Lugar - Top 10 Global!" % rank_info.rank
 		else:
-			# Para ranks acima de 10
-			cor_texto = Color(1, 0.7, 0.7) # Vermelho claro
+			cor_texto = Color(1, 0.7, 0.7)
 			texto_adicional = "\n(Jogue mais para entrar no Top 10!)"
 			player_rank_label.text = "%dº Lugar no Ranking Global%s" % [rank_info.rank, texto_adicional]
-		
 		player_rank_label.modulate = cor_texto
-		
-		# Adiciona informação sobre o total de jogadores
 		if rank_info.total > 0:
 			player_rank_label.text += "\n(%d de %d jogadores)" % [rank_info.rank, rank_info.total]
 	else:
 		player_rank_label.text = "Sem classificação ainda\nJogue para entrar no ranking!"
-		player_rank_label.modulate = Color(1, 0.6, 0.2) # Laranja
-		player_rank_label.modulate = Color(0.8, 0.8, 0.8) # Cinza
-		
-	# Exibe a pontuação com formatação
-	if high_score > 0:
-		if high_score >= 1000:
-			player_score_label.text = "🔥 %d pontos 🔥" % high_score
-			player_score_label.modulate = Color(1, 0.5, 0) # Laranja para pontuações altas
-		else:
-			player_score_label.text = "%d pontos" % high_score
-			player_score_label.modulate = Color(1, 0.8, 0) # Amarelo dourado
-	else:
-		player_score_label.text = "0 pontos (Jogue para pontuar!)"
-		player_score_label.modulate = Color(0.7, 0.7, 0.7) # Cinza
+		player_rank_label.modulate = Color(1, 0.6, 0.2)
+		player_rank_label.modulate = Color(0.8, 0.8, 0.8)
 	
 func _apply_platform_specific_settings():
 	"""Aplica configurações específicas para a plataforma atual"""

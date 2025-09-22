@@ -42,13 +42,16 @@ func _ready():
 	print("Global script inicializado")
 
 # Funções de autenticação
+@onready var auth = get_node("/root/Auth")
+
 func login_guest():
 	print("Função login_guest não implementada")
 
 func logout():
-	# O logout será implementado no auth.gd
-	# O script auth.gd cuidará de chamar Firebase.Auth.logout()
-	# Emitimos apenas o sinal de mudança de estado
+	if is_instance_valid(auth):
+		auth._on_logout_button_pressed()
+	else:
+		print("Logout realizado (fallback)")
 	auth_state_changed.emit(false)
 	print("Logout realizado")
 
@@ -64,10 +67,9 @@ func get_current_user_id():
 	"""Retorna o ID do usuário atualmente logado no Firebase"""
 	if not Firebase or not Firebase.Auth:
 		return ""
-		
-	var auth = Firebase.Auth.get_user_data()
-	if auth and auth.has("localid"):
-		return auth.localid
+	var auth_data = Firebase.Auth.get_user_data()
+	if auth_data and auth_data.has("localid"):
+		return auth_data.localid
 	return ""
 
 # Função para obter o nome do usuário atual
@@ -103,8 +105,66 @@ func get_player_name():
 
 # Função para obter a pontuação máxima do jogador
 func get_player_high_score():
-	# Implementar com Firebase
-	return 0
+	# Busca e retorna a pontuação máxima do jogador, cacheando em player_data.high_score
+	if not is_user_logged_in():
+		return 0
+	var user_id = get_current_user_id()
+	if user_id.is_empty():
+		return 0
+	# Se já está em cache, retorna
+	if player_data.high_score > 0:
+		return player_data.high_score
+	# Busca do Firestore (assíncrono, mas retorna cache imediato)
+	var user_collection = Firebase.Firestore.collection("users")
+	user_collection.get_doc(user_id).then(func(doc):
+		if doc and doc.has_field("score"):
+			player_data.high_score = doc.get_value("score")
+			user_data_updated.emit(player_data)
+	).catch(func(error):
+		print("Erro ao buscar score do usuário: " + str(error))
+	)
+	return player_data.high_score
+
+# Função para atualizar o nome do usuário centralizadamente
+func set_player_name(new_name: String, callback: Callable):
+	if not is_user_logged_in():
+		callback.call(false, "Usuário não está logado!")
+		return
+	var user_id = get_current_user_id()
+	if user_id.is_empty():
+		callback.call(false, "ID de usuário inválido!")
+		return
+	var user_collection = Firebase.Firestore.collection("users")
+	user_collection.get_doc(user_id).then(func(doc):
+		if doc:
+			# Documento existe, atualiza o nome
+			doc.add_or_update_field("display_name", new_name)
+			doc.add_or_update_field("updated_at", Time.get_unix_time_from_system())
+			Firebase.Firestore.update(doc.doc_name, {"display_name": new_name, "updated_at": Time.get_unix_time_from_system()}, "users").then(func(_result):
+				player_data.name = new_name
+				user_data_updated.emit(player_data)
+				callback.call(true, "Nome atualizado com sucesso!")
+			).catch(func(error):
+				callback.call(false, "Erro ao atualizar nome: " + str(error))
+			)
+		else:
+			# Documento não existe, cria um novo
+			var user_data = {
+				"display_name": new_name,
+				"score": 0,
+				"created_at": Time.get_unix_time_from_system(),
+				"updated_at": Time.get_unix_time_from_system()
+			}
+			Firebase.Firestore.add("users", user_id, user_data).then(func(_result):
+				player_data.name = new_name
+				user_data_updated.emit(player_data)
+				callback.call(true, "Nome criado com sucesso!")
+			).catch(func(error):
+				callback.call(false, "Erro ao criar perfil: " + str(error))
+			)
+	).catch(func(error):
+		callback.call(false, "Erro ao verificar perfil: " + str(error))
+	)
 	
 # Função para obter o rank do jogador atual
 func get_player_rank() -> Dictionary:
@@ -244,23 +304,17 @@ func load_leaderboard():
 	)
 
 # Funções de autenticação com email e senha
-func register_user(email: String, password: String):
-	"""Registra um novo usuário no Firebase Auth"""
-	if not Firebase or not Firebase.Auth:
-		print("Erro: Firebase ou Auth não disponível")
+func register_user(_email: String, _password: String):
+	if not is_instance_valid(auth):
+		print("Erro: Auth.gd não encontrado!")
 		return
-		
-	print("Registrando usuário: " + email)
-	Firebase.Auth.signup_with_email_and_password(email, password)
+	auth._on_sign_up_button_pressed()
 
-func login_user(email: String, password: String):
-	"""Faz login de um usuário no Firebase Auth"""
-	if not Firebase or not Firebase.Auth:
-		print("Erro: Firebase ou Auth não disponível")
+func login_user(_email: String, _password: String):
+	if not is_instance_valid(auth):
+		print("Erro: Auth.gd não encontrado!")
 		return
-		
-	print("Fazendo login do usuário: " + email)
-	Firebase.Auth.login_with_email_and_password(email, password)
+	auth._on_login_button_pressed()
 
 # Callbacks
 func _on_auth_state_changed(is_logged_in):
