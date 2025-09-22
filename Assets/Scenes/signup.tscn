@@ -103,6 +103,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.74902, 0, 1)
 horizontal_alignment = 1
 autowrap_mode = 3
+custom_minimum_size = Vector2(200, 30)
 
 [node name="login_button" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
