@@ -5,7 +5,7 @@ extends Control
 
 # Referências aos campos de entrada
 @onready var display_name_input = %display_name
-@onready var email_input = %username
+@onready var email_input = %EmailLabel
 @onready var password_input = %password
 @onready var login_button = %login_button
 @onready var back_button = %back_button
