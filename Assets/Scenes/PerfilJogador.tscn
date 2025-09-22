@@ -238,4 +238,4 @@ theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_2")
 text = "EXCLUIR CONTA"
 
-[connection signal="pressed" from="MainContainer/InfoContainer/ButtonContainer/LogoutButton" to="." method="_on_logout_button_pressed"]
+[connection signal="pressed" from="MainContainer/InfoContainer/ButtonContainer/LogoutButton" to="." method="_handle_logout"]

@@ -171,14 +171,14 @@ func submit_score(score):
 				print("Pontuação atual (" + str(current_score) + ") é maior que a nova (" + str(score) + "). Não atualizada.")
 		else:
 			# Documento não existe, cria um novo
-			var user_data = {
+			var new_user_data = {
 				"display_name": get_player_name(),
 				"score": score,
 				"created_at": Time.get_unix_time_from_system(),
 				"updated_at": Time.get_unix_time_from_system()
 			}
 			
-			Firebase.Firestore.add("users", user_id, user_data).then(func(_result):
+			Firebase.Firestore.add("users", user_id, new_user_data).then(func(_result):
 				print("Novo documento de usuário criado com pontuação")
 				# Recarrega o leaderboard para atualizar
 				load_leaderboard()
@@ -197,8 +197,10 @@ func load_leaderboard():
 	
 	print("Carregando leaderboard do Firestore...")
 	
+	# Cria uma consulta otimizada com os campos que precisamos
 	var query = FirestoreQuery.new()
 	query.from("users")
+	query.select(["display_name", "score"]) # Seleciona apenas os campos necessários
 	query.order_by("score", FirestoreQuery.DIRECTION.DESCENDING)
 	query.limit(100)
 	
@@ -209,12 +211,26 @@ func load_leaderboard():
 		if query_results:
 			# Processa cada documento nos resultados
 			for doc in query_results:
-				var player_data = {
+				# Extração otimizada de dados com verificação de nulos
+				var display_name = "Jogador Anônimo"
+				var score = 0
+				
+				if doc.has_field("display_name"):
+					display_name = doc.get_value("display_name")
+					# Garantir que o nome nunca seja nulo
+					if display_name == null or display_name.is_empty():
+						display_name = "Jogador " + doc.doc_name.substr(0, 5)
+				
+				if doc.has_field("score"):
+					score = doc.get_value("score")
+				
+				# Cria a entrada do leaderboard com os dados processados
+				var leaderboard_entry = {
 					"user_id": doc.doc_name,
-					"name": doc.get_value("display_name") if doc.has_field("display_name") else "Jogador Anônimo",
-					"score": doc.get_value("score") if doc.has_field("score") else 0
+					"name": display_name,
+					"score": score
 				}
-				results.append(player_data)
+				results.append(leaderboard_entry)
 			
 			# Emite o sinal com os resultados
 			scores_updated.emit(results)

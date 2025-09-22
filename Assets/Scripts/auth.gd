@@ -15,9 +15,6 @@ func _ready():
 		global.auth_state_changed.emit(true)
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
-func process(delta):
-	pass
-
 
 func _on_login_button_pressed():
 	var email = %display_name.text

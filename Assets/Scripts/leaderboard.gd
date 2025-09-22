@@ -68,15 +68,16 @@ func _on_scores_updated(scores):
 		placar_container.add_child(vbox)
 		return
 	
-	# Ordenar as pontuações (garantir que estejam em ordem decrescente)
+	# Ordenar as pontuações (do maior para o menor score)
 	scores.sort_custom(func(a, b): return a.score > b.score)
-	
-	# Garantir que temos apenas as 10 melhores pontuações
+
+	# Pegar apenas os 10 melhores jogadores (ou menos se houver menos jogadores)
 	var top_scores = []
-	for i in range(min(scores.size(), 10)):
+	var max_entries = min(scores.size(), 10)
+	for i in range(max_entries):
 		top_scores.append(scores[i])
-	
-	# Adiciona as linhas de pontuação
+
+	# Adiciona as linhas de pontuação para os top 10
 	for i in range(top_scores.size()):
 		add_score_row(i + 1, top_scores[i])
 
@@ -98,7 +99,8 @@ func add_score_row(pos_rank, score_data):
 		medal_texture.texture = get_medal_texture(pos_rank)
 		medal_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		medal_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-		medal_texture.custom_minimum_size = Vector2(40, 40)
+		medal_texture.custom_minimum_size = Vector2(50, 50) # Aumentei um pouco o tamanho
+		medal_texture.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		pos_container.add_child(medal_texture)
 	else:
 		# Para posições acima de 3, mostra o número da posição
@@ -151,6 +153,9 @@ func add_score_row(pos_rank, score_data):
 	placar_container.add_child(separator)
 
 # Retorna a textura da medalha baseada na posição
+# 1º lugar: medalha de ouro
+# 2º lugar: medalha de prata
+# 3º lugar: medalha de bronze
 func get_medal_texture(pos):
 	match pos:
 		1: return medal_gold
