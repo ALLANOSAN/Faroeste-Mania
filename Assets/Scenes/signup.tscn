@@ -87,13 +87,6 @@ max_length = 50
 layout_mode = 2
 text = "Senha:"
 
-[node name="password" type="LineEdit" parent="VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-placeholder_text = "Sua senha (min. 8 caracteres)"
-max_length = 30
-secret = true
-
 [node name="Spacer" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
