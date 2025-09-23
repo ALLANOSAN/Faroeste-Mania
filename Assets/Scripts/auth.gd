@@ -3,10 +3,10 @@ extends Control
 
 func _ready():
 	print("Auth script inicializado")
-	Firebase.Auth.login.on_login_succeeded.connect(on_login_succeeded)
-	Firebase.Auth.signup.on_signup_succeeded.connect(on_signup_succeeded)
-	Firebase.Auth.login.on_login_failed.connect(on_login_failed)
-	Firebase.Auth.signup.on_signup_failed.connect(on_signup_failed)
+	Firebase.Auth.login_succeeded.connect(on_login_succeeded)
+	Firebase.Auth.signup_succeeded.connect(on_signup_succeeded)
+	Firebase.Auth.login_failed.connect(on_login_failed)
+	Firebase.Auth.signup_failed.connect(on_signup_failed)
 
 	if Firebase.Auth.check_auth_file():
 		%FeedbackText.text = "Logado"
@@ -16,15 +16,11 @@ func _ready():
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
 
-func _on_login_button_pressed():
-	var email = %EmailLabel.text
-	var password = %password.text
+func login(email, password):
 	Firebase.Auth.login_with_email_and_password(email, password)
 
 
-func _on_sign_up_button_pressed():
-	var email = %EmailLabel.text
-	var password = %password.text
+func signup(email, password):
 	Firebase.Auth.signup_with_email_and_password(email, password)
 
 func on_login_succeeded(auth):

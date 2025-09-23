@@ -6,7 +6,7 @@ extends Control
 
 # Referências aos campos de entrada
 @onready var display_name_input = %display_name
-@onready var email_input = %EmailLabel
+@onready var email_input = %email
 @onready var password_input = %password
 @onready var login_button = %login_button
 @onready var back_button = %back_button
@@ -33,13 +33,17 @@ func _on_button_pressed() -> void:
 	if !_is_valid_email(email):
 		feedback_text.text = "Digite um email válido"
 		return
+		
 	feedback_text.text = "Registrando..."
-	auth._on_sign_up_button_pressed()
+	
+	# PASSE O EMAIL E A SENHA PARA O SCRIPT GLOBAL
+	auth.signup(email, password)
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")
 	
 func _ready():
+	# 
 	# TO-DO: Conectar sinais do Firebase
 	# Configurar os callbacks para sucesso e falha do registro
 	# Conectar o sinal do botão de login
@@ -55,8 +59,7 @@ func _on_register_success(_user_data): # Usando underscore para indicar que não
 	# após o login bem-sucedido que ocorre automaticamente após o registro
 	# Mostramos uma mensagem de confirmação
 	feedback_text.text = "Registro concluído com sucesso!"
-	
-	# Não estamos usando os dados do usuário diretamente nesta função
+# Não estamos usando os dados do usuário diretamente nesta função
 	# O registro e login serão gerenciados pelo Firebase
 	
 	# Após sucesso, navegamos para a tela principal do jogo (se necessário)

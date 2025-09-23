@@ -5,7 +5,7 @@ extends Control
 @onready var auth = get_node("/root/Auth")
 
 # Referências aos campos de entrada
-@onready var email_field = %username
+@onready var email_field = %email
 @onready var password_field = %password
 @onready var login_button = %button
 @onready var signup_button = %signup_button
@@ -31,7 +31,8 @@ func _on_button_pressed() -> void:
 		return
 	
 	feedback_text.text = "Fazendo login..."
-	auth._on_login_button_pressed()
+	# PASSE O EMAIL E A SENHA PARA O SCRIPT GLOBAL
+	auth.login(email, password)
 
 func _on_auth_state_changed(is_logged_in):
 	# Verificar se o nó ainda está na árvore antes de tentar usar get_tree()

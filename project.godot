@@ -24,6 +24,7 @@ id_token="eyJhbGciOiJSUzI1NiIsImtpZCI6ImUzZWU3ZTAyOGUzODg1YTM0NWNlMDcwNTVmODQ2OD
 
 Firebase="*res://addons/godot-firebase/firebase/firebase.tscn"
 Global="*res://Assets/Scripts/Global.gd"
+Auth="*res://Assets/Scripts/auth.gd"
 
 [debug]
 
