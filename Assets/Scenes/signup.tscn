@@ -73,7 +73,6 @@ placeholder_text = "Seu nome no jogo"
 max_length = 50
 
 [node name="EmailLabel" type="Label" parent="VBoxContainer"]
-unique_name_in_owner = true
 layout_mode = 2
 text = "Email:"
 
@@ -87,17 +86,24 @@ max_length = 50
 layout_mode = 2
 text = "Senha:"
 
+[node name="password" type="LineEdit" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Sua senha (min. 8 caracteres)"
+max_length = 30
+secret = true
+
 [node name="Spacer" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
 [node name="FeedbackText2" type="Label" parent="VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 30)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.74902, 0, 1)
 horizontal_alignment = 1
 autowrap_mode = 3
+custom_minimum_size = Vector2(200, 30)
 
 [node name="login_button" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
