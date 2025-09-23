@@ -167,31 +167,38 @@ func set_player_name(new_name: String, callback: Callable):
 	)
 	
 # Função para obter o rank do jogador atual
-func get_player_rank() -> Dictionary:
-	"""Retorna o rank do jogador baseado no leaderboard"""
+# Função para obter o rank do jogador atual
+func get_player_rank() -> void:
+	"""Obtém o ranque do jogador e emite um sinal com o resultado."""
 	if not is_user_logged_in():
-		return {"rank": 0, "total": 0}
+		user_data_updated.emit({"rank": 0, "total": 0})
+		return
 		
 	var user_id = get_current_user_id()
 	if user_id.is_empty():
-		return {"rank": 0, "total": 0}
+		user_data_updated.emit({"rank": 0, "total": 0})
+		return
 		
-	# Consulta o Firestore para obter todos os usuários ordenados por pontuação
 	var query = FirestoreQuery.new()
 	query.from("users")
 	query.order_by("score", FirestoreQuery.DIRECTION.DESCENDING)
 	
-	var result = await Firebase.Firestore.query(query)
-	var rank = 0
-	var total = result.size()
-	
-	# Procura o usuário na lista para determinar o rank
-	for i in range(total):
-		if result[i].doc_name == user_id:
-			rank = i + 1 # +1 porque o índice começa em 0 mas o rank começa em 1
-			break
-	
-	return {"rank": rank, "total": total}
+	Firebase.Firestore.query(query).then(func(result):
+		var rank = 0
+		var total = result.size()
+		
+		for i in range(total):
+			if result[i].doc_name == user_id:
+				rank = i + 1
+				break
+		
+		# Emite um sinal com o resultado do ranque
+		user_data_updated.emit({"rank": rank, "total": total})
+		
+	).catch(func(error):
+		print("Erro ao obter rank do jogador: " + str(error))
+		user_data_updated.emit({"rank": 0, "total": 0})
+	)
 
 # Funções de pontuação
 func submit_score(score):
