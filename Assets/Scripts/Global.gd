@@ -57,14 +57,10 @@ func logout():
 
 # Função para verificar se o usuário está logado
 func is_user_logged_in():
-	# Verifica no Firebase
-	if Firebase and Firebase.Auth and Firebase.Auth.check_auth_file():
-		return true
-	return false
+	return Firebase and Firebase.Auth and Firebase.Auth.check_auth_file()
 
 # Função para obter o ID do usuário atual
 func get_current_user_id():
-	"""Retorna o ID do usuário atualmente logado no Firebase"""
 	if not Firebase or not Firebase.Auth:
 		return ""
 	var auth_data = Firebase.Auth.get_user_data()
@@ -74,242 +70,118 @@ func get_current_user_id():
 
 # Função para obter o nome do usuário atual
 func get_player_name():
-	"""Retorna o nome do usuário atual do Firestore"""
 	if not is_user_logged_in():
 		return "Visitante"
-		
-	var user_id = get_current_user_id()
-	if user_id.is_empty():
-		return "Visitante"
-		
-	# Primeiro, verifica se já temos o nome em cache
-	if player_data.name and not player_data.name.is_empty():
-		return player_data.name
-		
-	# Se não temos em cache, busca do Firestore (isso será assíncrono)
-	# Nota: Como essa função não é async, o nome será atualizado depois
-	# e estará disponível apenas na próxima chamada
-	var user_collection = Firebase.Firestore.collection("users")
-	
-	user_collection.get_doc(user_id).then(func(doc):
-		if doc and doc.has_field("display_name"):
-			player_data.name = doc.get_value("display_name")
-			# Notifica que os dados do usuário foram atualizados
-			user_data_updated.emit(player_data)
-	).catch(func(error):
-		print("Erro ao buscar nome do usuário: " + str(error))
-	)
-	
-	# Retorna o valor atual (que pode ser atualizado posteriormente)
-	return player_data.name if not player_data.name.is_empty() else "Jogador " + user_id.substr(0, 5)
+	return player_data.name if not player_data.name.is_empty() else "Jogador " + get_current_user_id().substr(0, 5)
 
-# Função para obter a pontuação máxima do jogador
+# CORRIGIDO: Adicionada a função get_player_high_score()
 func get_player_high_score():
-	# Busca e retorna a pontuação máxima do jogador, cacheando em player_data.high_score
-	if not is_user_logged_in():
-		return 0
-	var user_id = get_current_user_id()
-	if user_id.is_empty():
-		return 0
-	# Se já está em cache, retorna
-	if player_data.high_score > 0:
-		return player_data.high_score
-	# Busca do Firestore (assíncrono, mas retorna cache imediato)
-	var user_collection = Firebase.Firestore.collection("users")
-	user_collection.get_doc(user_id).then(func(doc):
-		if doc and doc.has_field("score"):
-			player_data.high_score = doc.get_value("score")
-			user_data_updated.emit(player_data)
-	).catch(func(error):
-		print("Erro ao buscar score do usuário: " + str(error))
-	)
 	return player_data.high_score
 
-# Função para atualizar o nome do usuário centralizadamente
-func set_player_name(new_name: String, callback: Callable):
-	if not is_user_logged_in():
-		callback.call(false, "Usuário não está logado!")
-		return
-	var user_id = get_current_user_id()
-	if user_id.is_empty():
-		callback.call(false, "ID de usuário inválido!")
-		return
-	var user_collection = Firebase.Firestore.collection("users")
-	user_collection.get_doc(user_id).then(func(doc):
-		if doc:
-			# Documento existe, atualiza o nome
-			doc.add_or_update_field("display_name", new_name)
-			doc.add_or_update_field("updated_at", Time.get_unix_time_from_system())
-			Firebase.Firestore.update(doc.doc_name, {"display_name": new_name, "updated_at": Time.get_unix_time_from_system()}, "users").then(func(_result):
-				player_data.name = new_name
-				user_data_updated.emit(player_data)
-				callback.call(true, "Nome atualizado com sucesso!")
-			).catch(func(error):
-				callback.call(false, "Erro ao atualizar nome: " + str(error))
-			)
-		else:
-			# Documento não existe, cria um novo
-			var user_data = {
-				"display_name": new_name,
-				"score": 0,
-				"created_at": Time.get_unix_time_from_system(),
-				"updated_at": Time.get_unix_time_from_system()
-			}
-			Firebase.Firestore.add("users", user_id, user_data).then(func(_result):
-				player_data.name = new_name
-				user_data_updated.emit(player_data)
-				callback.call(true, "Nome criado com sucesso!")
-			).catch(func(error):
-				callback.call(false, "Erro ao criar perfil: " + str(error))
-			)
-	).catch(func(error):
-		callback.call(false, "Erro ao verificar perfil: " + str(error))
-	)
-	
-# Função para obter o rank do jogador atual
-# Função para obter o rank do jogador atual
-func get_player_rank() -> void:
-	"""Obtém o ranque do jogador e emite um sinal com o resultado."""
-	if not is_user_logged_in():
-		user_data_updated.emit({"rank": 0, "total": 0})
-		return
-		
-	var user_id = get_current_user_id()
-	if user_id.is_empty():
-		user_data_updated.emit({"rank": 0, "total": 0})
-		return
-		
-	var query = FirestoreQuery.new()
-	query.from("users")
-	query.order_by("score", FirestoreQuery.DIRECTION.DESCENDING)
-	
-	Firebase.Firestore.query(query).then(func(result):
-		var rank = 0
-		var total = result.size()
-		
-		for i in range(total):
-			if result[i].doc_name == user_id:
-				rank = i + 1
-				break
-		
-		# Emite um sinal com o resultado do ranque
-		user_data_updated.emit({"rank": rank, "total": total})
-		
-	).catch(func(error):
-		print("Erro ao obter rank do jogador: " + str(error))
-		user_data_updated.emit({"rank": 0, "total": 0})
-	)
+# CORRIGIDO: Adicionada a função set_player_high_score()
+func set_player_high_score(score: int):
+	player_data.high_score = score
 
-# Funções de pontuação
-func submit_score(score):
-	"""Envia a pontuação do jogador para o Firestore"""
-	if not is_user_logged_in():
-		print("Erro: É necessário estar logado para enviar pontuações")
-		return
-		
+# Função para criar o perfil do usuário
+func create_user_profile_document(user_id, display_name):
+	var user_data = {
+		"display_name": display_name,
+		"high_score": 0
+	}
+	
+	var user_collection = Firebase.Firestore.collection("users")
+	var result = await user_collection.add(user_id, user_data)
+	if result:
+		print("Documento de perfil de usuário criado com sucesso para o ID: ", user_id)
+		update_user_data(result)
+	else:
+		print("Erro ao criar o documento de perfil do usuário: ", result.get_error())
+
+# Função para atualizar o nome do jogador
+func update_player_name(new_name):
 	var user_id = get_current_user_id()
 	if user_id.is_empty():
-		print("Erro: ID de usuário inválido")
+		print("Erro: ID do usuário não encontrado.")
 		return
+	
+	var users_collection = Firebase.Firestore.collection("users")
+	var user_doc = await users_collection.get_doc(user_id)
+	
+	if user_doc:
+		var updated_doc = await users_collection.update(user_doc.doc_name, {"display_name": new_name})
+		if updated_doc:
+			print("Nome de usuário atualizado com sucesso!")
+			update_user_data(updated_doc)
+		else:
+			print("Erro ao atualizar nome de usuário: ", updated_doc.get_error())
+	else:
+		print("Erro: Documento do usuário não encontrado.")
+
+func load_user_data():
+	var user_id = get_current_user_id()
+	if user_id.is_empty():
+		print("Não há usuário logado.")
+		return
+	
+	var user_doc_ref = Firebase.Firestore.collection("users")
+	var doc = await user_doc_ref.get_doc(user_id)
+	
+	if doc:
+		update_user_data(doc)
+	else:
+		print("Documento de usuário não encontrado para o ID: ", user_id)
 		
-	print("Enviando pontuação: " + str(score))
+# Funções do placar
+func save_player_score(score: int):
+	var user_id = get_current_user_id()
+	if user_id.is_empty():
+		print("Usuário não logado. Pontuação não será salva.")
+		return
 	
-	# Primeiro, busca o documento do usuário para verificar se já existe
-	var user_collection = Firebase.Firestore.collection("users")
+	print("Tentando salvar pontuação para o usuário ", user_id, " com pontuação ", score)
 	
-	user_collection.get_doc(user_id).then(func(doc):
-		if doc:
-			# Documento existe, verifica se a nova pontuação é maior
-			var current_score = doc.get_value("score") if doc.has_field("score") else 0
-			
-			if score > current_score:
-				# Atualiza a pontuação
-				doc.add_or_update_field("score", score)
-				doc.add_or_update_field("updated_at", Time.get_unix_time_from_system())
-				
-				Firebase.Firestore.update(doc.doc_name, {"score": score, "updated_at": Time.get_unix_time_from_system()}, "users").then(func(_result):
-					print("Pontuação atualizada com sucesso")
-					# Recarrega o leaderboard para atualizar
-					load_leaderboard()
-				).catch(func(error):
-					print("Erro ao atualizar pontuação: " + str(error))
-				)
+	var user_doc = await Firebase.Firestore.collection("users").get_doc(user_id)
+	if user_doc:
+		var current_high_score = user_doc.get_field("high_score") if user_doc.has_field("high_score") else 0
+		
+		if score > current_high_score:
+			print("Nova pontuação ", score, " é maior que a pontuação máxima atual ", current_high_score, ". Atualizando...")
+			var updated_doc = await Firebase.Firestore.collection("users").update(user_doc.doc_name, {"high_score": score})
+			if updated_doc:
+				print("Pontuação máxima atualizada com sucesso para: ", score)
+				set_player_high_score(score)
+				user_data_updated.emit(updated_doc)
 			else:
-				print("Pontuação atual (" + str(current_score) + ") é maior que a nova (" + str(score) + "). Não atualizada.")
+				print("Erro ao atualizar a pontuação máxima: ", updated_doc.get_error())
 		else:
-			# Documento não existe, cria um novo
-			var new_user_data = {
-				"display_name": get_player_name(),
-				"score": score,
-				"created_at": Time.get_unix_time_from_system(),
-				"updated_at": Time.get_unix_time_from_system()
-			}
-			
-			Firebase.Firestore.add("users", user_id, new_user_data).then(func(_result):
-				print("Novo documento de usuário criado com pontuação")
-				# Recarrega o leaderboard para atualizar
-				load_leaderboard()
-			).catch(func(error):
-				print("Erro ao criar documento de usuário: " + str(error))
-			)
-	).catch(func(error):
-		print("Erro ao buscar documento do usuário: " + str(error))
-	)
-
+			print("Nova pontuação ", score, " não é maior que a pontuação máxima atual ", current_high_score, ". Nenhuma atualização necessária.")
+	else:
+		print("Documento do usuário não encontrado. Não é possível salvar a pontuação.")
+	
 func load_leaderboard():
-	"""Carrega o leaderboard do Firestore"""
-	if not Firebase or not Firebase.Firestore:
-		print("Erro: Firebase ou Firestore não disponível")
-		return
-	
-	print("Carregando leaderboard do Firestore...")
-	
-	# Cria uma consulta otimizada com os campos que precisamos
 	var query = FirestoreQuery.new()
 	query.from("users")
-	query.select(["display_name", "score"]) # Seleciona apenas os campos necessários
-	query.order_by("score", FirestoreQuery.DIRECTION.DESCENDING)
+	query.select(["display_name", "high_score"])
+	query.order_by("high_score", FirestoreQuery.DIRECTION.DESCENDING)
 	query.limit(100)
 	
-	var results = []
-	
-	# Executa a consulta no Firestore
-	Firebase.Firestore.query(query).then(func(query_results):
-		if query_results:
-			# Processa cada documento nos resultados
-			for doc in query_results:
-				# Extração otimizada de dados com verificação de nulos
-				var display_name = "Jogador Anônimo"
-				var score = 0
-				
-				if doc.has_field("display_name"):
-					display_name = doc.get_value("display_name")
-					# Garantir que o nome nunca seja nulo
-					if display_name == null or display_name.is_empty():
-						display_name = "Jogador " + doc.doc_name.substr(0, 5)
-				
-				if doc.has_field("score"):
-					score = doc.get_value("score")
-				
-				# Cria a entrada do leaderboard com os dados processados
-				var leaderboard_entry = {
-					"user_id": doc.doc_name,
-					"name": display_name,
-					"score": score
-				}
-				results.append(leaderboard_entry)
-			
-			# Emite o sinal com os resultados
-			scores_updated.emit(results)
-			print("Leaderboard carregado com sucesso: " + str(results.size()) + " jogadores")
-		else:
-			print("Nenhum resultado encontrado no leaderboard")
-			scores_updated.emit([])
-	).catch(func(error):
-		print("Erro ao carregar leaderboard: " + str(error))
+	var query_results = await Firebase.Firestore.query(query)
+	if query_results:
+		var results = []
+		for doc in query_results:
+			var leaderboard_entry = {
+				"user_id": doc.doc_name,
+				"name": doc.get_value("display_name") if doc.has_field("display_name") else "Jogador Anônimo",
+				"score": doc.get_value("high_score") if doc.has_field("high_score") else 0
+			}
+			results.append(leaderboard_entry)
+		
+		scores_updated.emit(results)
+		print("Leaderboard carregado com sucesso: " + str(results.size()) + " jogadores")
+	else:
+		print("Nenhum resultado encontrado no leaderboard")
 		scores_updated.emit([])
-	)
-
+	
 # Funções de autenticação com email e senha
 func register_user(_email: String, _password: String):
 	if not is_instance_valid(auth):
@@ -328,31 +200,22 @@ func _on_auth_state_changed(is_logged_in):
 	# Repassa o sinal
 	auth_state_changed.emit(is_logged_in)
 
-# Esta função será implementada para o Firebase
 func update_user_data(user_data):
-	# Atualiza os dados do jogador
 	if user_data != null:
 		player_data.id = user_data.get("id", "")
-		player_data.name = user_data.get("name", "")
-		
-		# Emite o sinal de dados atualizados
+		player_data.name = user_data.get("display_name", "")
+		# CORRIGIDO: Utiliza a função para atualizar a pontuação
+		set_player_high_score(user_data.get("high_score", 0))
 		user_data_updated.emit(player_data)
 	else:
 		print("AVISO: user_data é nulo em update_user_data")
 
-# Função para limpar a sessão (logout + apagar dados)
 func clear_session():
-	# Primeiro faz logout
 	logout()
-	
-	# Limpa dados do player
 	player_data = {
 		"id": "",
 		"name": "",
 		"high_score": 0
 	}
-	
 	print("Sessão e dados do usuário removidos")
-	
-	# Emite sinal de atualização dos dados
 	user_data_updated.emit(player_data)

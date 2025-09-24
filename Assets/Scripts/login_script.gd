@@ -11,6 +11,10 @@ extends Control
 @onready var signup_button = %signup_button
 
 func _ready():
+	# Conectar sinais do auth para feedback
+	auth.login_failed.connect(_on_auth_login_failed)
+	auth.login_succeeded.connect(_on_auth_login_succeeded)
+	
 	# Verificamos se o usuário já está autenticado
 	if global.is_user_logged_in():
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
@@ -34,19 +38,17 @@ func _on_button_pressed() -> void:
 	# PASSE O EMAIL E A SENHA PARA O SCRIPT GLOBAL
 	auth.login(email, password)
 
-func _on_auth_state_changed(is_logged_in):
-	# Verificar se o nó ainda está na árvore antes de tentar usar get_tree()
-	if not is_inside_tree():
-		print("Aviso: Nó não está mais na árvore de cena")
-		return
-		
-	if is_logged_in:
-		print("Login realizado com sucesso!")
-		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+func _on_auth_login_succeeded(auth_data):
+	# Trata sucesso do login
+	feedback_text.text = "Login realizado com sucesso!"
+	print("Login succeeded with auth: ", auth_data)
+	
+	# Muda para a cena principal
+	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
-func _on_login_failed(error_message):
+func _on_auth_login_failed(error_code, message):
 	if feedback_text:
-		feedback_text.text = "Falha no login: " + error_message
+		feedback_text.text = "Falha ao fazer login: Error %s (Code: %s)" % [message, error_code]
 		
 func _on_signup_button_pressed() -> void:
 	# Vai para a tela de registro

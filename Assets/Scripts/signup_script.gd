@@ -41,33 +41,22 @@ func _on_button_pressed() -> void:
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")
+
+# Callback de sucesso de registro do Firebase
+# CORRIGIDO: Agora vai para a tela de login
+func _on_auth_signup_succeeded(auth_data):
+	print("Signup succeeded with auth: ", auth_data)
+	# Salva a autenticação do novo usuário
+	Firebase.Auth.save_auth(auth_data)
+	Firebase.Auth.load_auth()
 	
-func _ready():
-	# 
-	# TO-DO: Conectar sinais do Firebase
-	# Configurar os callbacks para sucesso e falha do registro
-	# Conectar o sinal do botão de login
-	login_button.pressed.connect(_on_button_pressed)
-	# Conectar o sinal do botão de voltar
-	back_button.pressed.connect(_on_back_button_pressed)
-	
-	# Aplica configurações específicas para a plataforma atual
-	_apply_platform_specific_settings()
-	
-func _on_register_success(_user_data): # Usando underscore para indicar que não usamos o parâmetro
-	# De acordo com o SDK oficial, o callback register_success é acionado
-	# após o login bem-sucedido que ocorre automaticamente após o registro
-	# Mostramos uma mensagem de confirmação
-	feedback_text.text = "Registro concluído com sucesso!"
-# Não estamos usando os dados do usuário diretamente nesta função
-	# O registro e login serão gerenciados pelo Firebase
-	
-	# Após sucesso, navegamos para a tela principal do jogo (se necessário)
-	# Precisará implementar a lógica de autenticação completa com Firebase
-	
-func _on_register_failed(error_message):
-	feedback_text.text = "Falha no registro: " + error_message
-	
+	# Muda para a cena de login
+	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")
+
+func _on_auth_signup_failed(error_code, message):
+	print("Signup failed with code: ", error_code)
+	feedback_text.text = "Falha ao fazer o cadastro: Error %s (Code: %s)" % [message, error_code]
+
 func _apply_platform_specific_settings():
 	"""Aplica configurações específicas para a plataforma atual"""
 	if global.Platform.is_mobile:
@@ -87,10 +76,17 @@ func _apply_platform_specific_settings():
 	else:
 		# Otimizações para desktop
 		print("Aplicando configurações de UI para desktop na tela de registro...")
-		# Manter tamanhos padrão para uso com mouse
+		if is_instance_valid(display_name_input):
+			display_name_input.custom_minimum_size.y = 40
+		if is_instance_valid(email_input):
+			email_input.custom_minimum_size.y = 40
+		if is_instance_valid(password_input):
+			password_input.custom_minimum_size.y = 40
+		if is_instance_valid(login_button):
+			login_button.custom_minimum_size.y = 50
+		if is_instance_valid(back_button):
+			back_button.custom_minimum_size.y = 50
 
+# Validar formato do email
 func _is_valid_email(email: String) -> bool:
-	# Regex simples para validar e-mails
-	var regex = RegEx.new()
-	regex.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
-	return regex.search(email) != null
+	return email.match("?*@?*.?*")
