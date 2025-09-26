@@ -1,3 +1,28 @@
+# Deleta a conta do usuário autenticado e remove seus dados do Firestore
+func delete_account() -> void:
+	var uid = get_current_user_id()
+	if uid == "":
+		push_error("Usuário não está logado!")
+		return
+
+	# 1. Deleta usuário do Auth
+	var err = await Firebase.Auth.delete_user()
+	if err != null:
+		push_error("Erro ao deletar conta do Auth: %s" % err)
+		return
+
+	# 2. Remove dados do Firestore (users e scores)
+	err = await Firebase.Firestore.collection("users").delete(uid)
+	if err != null:
+		push_error("Erro ao deletar perfil do Firestore: %s" % err)
+	err = await Firebase.Firestore.collection("scores").delete(uid)
+	if err != null:
+		push_error("Erro ao deletar score do Firestore: %s" % err)
+
+	# 3. Limpa dados locais e emite sinal de logout
+	player_data = {"id": "", "name": "", "high_score": 0}
+	auth_state_changed.emit(false)
+	print("Conta e dados removidos com sucesso!")
 extends Node
 
 signal auth_state_changed(is_logged_in)
@@ -10,212 +35,152 @@ var player_data = {
 	"high_score": 0
 }
 
-# Sistema de detecção de plataforma
-class PlatformDetector:
-	var is_mobile := false
-	var is_desktop := false
-	var is_web := false
-	
-	func _init():
-		# Detecta a plataforma
-		match OS.get_name():
-			"Android", "iOS":
-				is_mobile = true
-			"HTML5":
-				is_web = true
-			_:
-				is_desktop = true
-	
-	# Função para verificar cliques válidos com base na plataforma
-	func is_valid_click(event):
-		if is_mobile:
-			# No mobile, checamos por toques na tela
-			return event is InputEventScreenTouch and event.pressed
-		else:
-			# No desktop, checamos por cliques do mouse
-			return event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+func _ready() -> void:
+	print("Global initialized")
+	# Opcional: ao carregar (editor ou runtime), notifique estado
+	auth_state_changed.emit(is_user_logged_in())
 
-# Inicializa o detector de plataforma
-var Platform = PlatformDetector.new()
-
-func _ready():
-	print("Global script inicializado")
-
-# Funções de autenticação
-@onready var auth = get_node("/root/Auth")
-
-func login_guest():
-	print("Função login_guest não implementada")
-
-func logout():
-	if is_instance_valid(auth):
-		auth._on_logout_button_pressed()
-	else:
-		print("Logout realizado (fallback)")
-	auth_state_changed.emit(false)
-	print("Logout realizado")
-
-# Função para verificar se o usuário está logado
-func is_user_logged_in():
-	return Firebase and Firebase.Auth and Firebase.Auth.check_auth_file()
-
-# Função para obter o ID do usuário atual
-func get_current_user_id():
-	if not Firebase or not Firebase.Auth:
-		return ""
-	var auth_data = Firebase.Auth.get_user_data()
-	if auth_data and auth_data.has("localid"):
-		return auth_data.localid
-	return ""
-
-# Função para obter o nome do usuário atual
-func get_player_name():
-	if not is_user_logged_in():
-		return "Visitante"
-	return player_data.name if not player_data.name.is_empty() else "Jogador " + get_current_user_id().substr(0, 5)
-
-# CORRIGIDO: Adicionada a função get_player_high_score()
-func get_player_high_score():
-	return player_data.high_score
-
-# CORRIGIDO: Adicionada a função set_player_high_score()
-func set_player_high_score(score: int):
-	player_data.high_score = score
-
-# Função para criar o perfil do usuário
-func create_user_profile_document(user_id, display_name):
-	var user_data = {
+#
+# PROFILE
+#
+func create_user_profile_document(user_id: String, display_name: String) -> void:
+	var data = {
 		"display_name": display_name,
 		"high_score": 0
 	}
-	
-	var user_collection = Firebase.Firestore.collection("users")
-	var result = await user_collection.add(user_id, user_data)
-	if result:
-		print("Documento de perfil de usuário criado com sucesso para o ID: ", user_id)
-		update_user_data(result)
-	else:
-		print("Erro ao criar o documento de perfil do usuário: ", result.get_error())
+	Firebase.Firestore.collection("users").add(user_id, data)
 
-# Função para atualizar o nome do jogador
-func update_player_name(new_name):
-	var user_id = get_current_user_id()
-	if user_id.is_empty():
-		print("Erro: ID do usuário não encontrado.")
-		return
-	
-	var users_collection = Firebase.Firestore.collection("users")
-	var user_doc = await users_collection.get_doc(user_id)
-	
-	if user_doc:
-		var updated_doc = await users_collection.update(user_doc.doc_name, {"display_name": new_name})
-		if updated_doc:
-			print("Nome de usuário atualizado com sucesso!")
-			update_user_data(updated_doc)
-		else:
-			print("Erro ao atualizar nome de usuário: ", updated_doc.get_error())
-	else:
-		print("Erro: Documento do usuário não encontrado.")
-
-func load_user_data():
-	var user_id = get_current_user_id()
-	if user_id.is_empty():
-		print("Não há usuário logado.")
-		return
-	
-	var user_doc_ref = Firebase.Firestore.collection("users")
-	var doc = await user_doc_ref.get_doc(user_id)
-	
-	if doc:
-		update_user_data(doc)
-	else:
-		print("Documento de usuário não encontrado para o ID: ", user_id)
-		
-# Funções do placar
-func save_player_score(score: int):
-	var user_id = get_current_user_id()
-	if user_id.is_empty():
-		print("Usuário não logado. Pontuação não será salva.")
-		return
-	
-	print("Tentando salvar pontuação para o usuário ", user_id, " com pontuação ", score)
-	
-	var user_doc = await Firebase.Firestore.collection("users").get_doc(user_id)
-	if user_doc:
-		var current_high_score = user_doc.get_field("high_score") if user_doc.has_field("high_score") else 0
-		
-		if score > current_high_score:
-			print("Nova pontuação ", score, " é maior que a pontuação máxima atual ", current_high_score, ". Atualizando...")
-			var updated_doc = await Firebase.Firestore.collection("users").update(user_doc.doc_name, {"high_score": score})
-			if updated_doc:
-				print("Pontuação máxima atualizada com sucesso para: ", score)
-				set_player_high_score(score)
-				user_data_updated.emit(updated_doc)
-			else:
-				print("Erro ao atualizar a pontuação máxima: ", updated_doc.get_error())
-		else:
-			print("Nova pontuação ", score, " não é maior que a pontuação máxima atual ", current_high_score, ". Nenhuma atualização necessária.")
-	else:
-		print("Documento do usuário não encontrado. Não é possível salvar a pontuação.")
-	
-func load_leaderboard():
-	var query = FirestoreQuery.new()
-	query.from("users")
-	query.select(["display_name", "high_score"])
-	query.order_by("high_score", FirestoreQuery.DIRECTION.DESCENDING)
-	query.limit(100)
-	
-	var query_results = await Firebase.Firestore.query(query)
-	if query_results:
-		var results = []
-		for doc in query_results:
-			var leaderboard_entry = {
-				"user_id": doc.doc_name,
-				"name": doc.get_value("display_name") if doc.has_field("display_name") else "Jogador Anônimo",
-				"score": doc.get_value("high_score") if doc.has_field("high_score") else 0
+func load_user_data() -> void:
+	var uid = get_current_user_id()
+	if uid == "": return
+	# Busca dados do usuário
+	Firebase.Firestore.collection("users").get_doc(uid).then(func(doc):
+		if doc and not doc.error:
+			var user_data = {
+				"id": uid,
+				"name": doc.get("display_name", ""),
+				"high_score": doc.get("high_score", 0)
 			}
-			results.append(leaderboard_entry)
-		
-		scores_updated.emit(results)
-		print("Leaderboard carregado com sucesso: " + str(results.size()) + " jogadores")
+			# Agora busca o rank na coleção scores
+			Firebase.Firestore.collection("scores").get_doc(uid).then(func(score_doc):
+				if score_doc and not score_doc.error:
+					user_data["rank"] = score_doc.get("rank", 0)
+				else:
+					user_data["rank"] = 0
+				user_data_updated.emit(user_data)
+			)
+		else:
+			user_data_updated.emit({})
+	)
+
+func _on_user_doc_fetched(doc) -> void:
+	if doc and not doc.error:
+		player_data.id = get_current_user_id()
+		player_data.name = doc.get("display_name", "")
+		player_data.high_score = doc.get("high_score", 0)
+		user_data_updated.emit({
+			"id": player_data.id,
+			"name": player_data.name,
+			"high_score": player_data.high_score
+		})
+
+        
+func update_player_name(new_name: String) -> void:
+	var uid = get_current_user_id()
+	# como o jogador sempre está logado, não precisa de if uid == ""
+	# chama o update e espera o resultado
+	var err = await Firebase.Firestore.collection("users").update(uid, {
+		"display_name": new_name
+	})
+	if err == null:
+		# Atualiza também o username na coleção de scores
+		var err2 = await Firebase.Firestore.collection("scores").update(uid, {
+			"username": new_name
+		})
+		if err2 != null:
+			push_error("Erro ao atualizar username no leaderboard: %s" % err2)
+		# sucessão do update: atualiza cache e dispara o sinal
+		player_data.name = new_name
+		user_data_updated.emit({
+			"name": player_data.name
+		})
+		load_leaderboard() # força refresh do leaderboard após update
 	else:
-		print("Nenhum resultado encontrado no leaderboard")
-		scores_updated.emit([])
-	
-# Funções de autenticação com email e senha
-func register_user(_email: String, _password: String):
-	if not is_instance_valid(auth):
-		print("Erro: Auth.gd não encontrado!")
+		push_error("Erro ao atualizar nome de usuário: %s" % err)
+
+func update_player_high_score(new_score: int) -> void:
+	var uid = get_current_user_id()
+	if uid == "" or new_score <= player_data.high_score:
 		return
-	auth._on_sign_up_button_pressed()
-
-func login_user(_email: String, _password: String):
-	if not is_instance_valid(auth):
-		print("Erro: Auth.gd não encontrado!")
-		return
-	auth._on_login_button_pressed()
-
-# Callbacks
-func _on_auth_state_changed(is_logged_in):
-	# Repassa o sinal
-	auth_state_changed.emit(is_logged_in)
-
-func update_user_data(user_data):
-	if user_data != null:
-		player_data.id = user_data.get("id", "")
-		player_data.name = user_data.get("display_name", "")
-		# CORRIGIDO: Utiliza a função para atualizar a pontuação
-		set_player_high_score(user_data.get("high_score", 0))
-		user_data_updated.emit(player_data)
+	# Atualiza o high_score do usuário
+	var err = await Firebase.Firestore.collection("users").update(uid, {
+		"high_score": new_score
+	})
+	if err == null:
+		player_data.high_score = new_score
+		# Agora atualiza o rank e username na coleção de scores
+		await _update_score_and_rank(uid, new_score, player_data.name)
+		load_leaderboard()
 	else:
-		print("AVISO: user_data é nulo em update_user_data")
+		push_error("Erro ao atualizar high_score: %s" % err)
 
-func clear_session():
-	logout()
-	player_data = {
-		"id": "",
-		"name": "",
-		"high_score": 0
-	}
-	print("Sessão e dados do usuário removidos")
-	user_data_updated.emit(player_data)
+# Atualiza/insere o score do usuário e recalcula o rank
+func _update_score_and_rank(uid: String, score: int, username: String) -> void:
+	# Atualiza o score
+	var err = await Firebase.Firestore.collection("scores").set(uid, {
+		"score": score,
+		"username": username
+	}, true) # merge = true
+	if err != null:
+		push_error("Erro ao atualizar score: %s" % err)
+		return
+	# Busca quantos têm score maior
+	var q = FirestoreQuery.new()
+	q.from("scores")
+	q.where("score", FirestoreQuery.OP.GREATER_THAN, score)
+	var res = await Firebase.Firestore.query(q)
+	var rank = (res.size() if res else 0) + 1
+	# Atualiza o rank no documento de score
+	err = await Firebase.Firestore.collection("scores").update(uid, {
+		"rank": rank
+	})
+	if err != null:
+		push_error("Erro ao atualizar rank: %s" % err)
+
+#
+# LEADERBOARD
+#
+func load_leaderboard() -> void:
+	var q = FirestoreQuery.new()
+	q.from("scores")
+	q.select(["username", "score", "rank"])
+	q.order_by("score", FirestoreQuery.DIRECTION.DESCENDING)
+	q.limit(10)
+	Firebase.Firestore.query(q).then(_on_leaderboard_fetched)
+
+func _on_leaderboard_fetched(results) -> void:
+	var arr := []
+	for d in results:
+		arr.append({
+			"user_id": d.doc_name,
+			"name": d.get("username", "—"),
+			"score": d.get("score", 0),
+			"rank": d.get("rank", 0)
+		})
+	scores_updated.emit(arr)
+
+#
+# AUTH HELPERS
+#
+func is_user_logged_in() -> bool:
+	return Firebase and Firebase.Auth and Firebase.Auth.check_auth_file()
+
+func get_current_user_id() -> String:
+	if not is_user_logged_in(): return ""
+	return Firebase.Auth.get_user_data().localId
+
+func get_player_name() -> String:
+	return player_data.name
+
+func get_player_high_score() -> int:
+	return player_data.high_score

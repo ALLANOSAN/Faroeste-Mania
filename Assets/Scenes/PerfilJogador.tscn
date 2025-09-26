@@ -123,6 +123,23 @@ theme_override_font_sizes/font_size = 22
 text = "Carregando..."
 autowrap_mode = 2
 
+[node name="NomeJogadorLabel" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Nome do Jogador:"
+autowrap_mode = 2
+
+[node name="NomeJogadorValue" type="Label" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Carregando..."
+autowrap_mode = 2
+
 [node name="HSeparator2" type="HSeparator" parent="MainContainer/InfoContainer/PlayerInfoPanel/PlayerInfoVBox"]
 layout_mode = 2
 
