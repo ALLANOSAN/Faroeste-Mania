@@ -100,7 +100,7 @@ func spawn_alvo():
 
 func _on_alvo_input_event(_viewport, event, _shape_idx):
 	# Usa o sistema Platform para verificar se é um clique válido para a plataforma atual
-	if alvo_ativo and get_node("/root/Global").Platform.is_valid_click(event):
+	if alvo_ativo and Platform.is_valid_click(event):
 		# Chama a função de acertar alvo
 		acertar_alvo()
 
@@ -112,7 +112,7 @@ func _input(event):
 		var is_valid_input = false
 		
 		# Verificação otimizada baseada na plataforma atual
-		if global.Platform.is_mobile:
+		if Platform.is_mobile:
 			# Em dispositivos móveis, processa apenas eventos de toque
 			if event is InputEventScreenTouch and event.pressed:
 				input_position = event.position
@@ -162,7 +162,7 @@ func acertar_alvo():
 	
 	# Atualiza a pontuação máxima local
 	if global.is_user_logged_in() and pontos > global.get_player_high_score():
-		global.player_high_score = pontos
+		global.update_player_high_score(pontos)
 	
 	# Prepara para o próximo spawn imediatamente
 	spawn_alvo()
@@ -213,21 +213,9 @@ func game_over():
 		"rank_salvo": false # Inicialmente definimos como falso
 	}
 	
-	# Salva a pontuação usando Firebase
-	print("Salvando pontuação de %d diretamente do mapa_jogo.gd..." % pontos)
-	salvar_pontuacao(pontos)
-	# Marca que o rank foi salvo para informar na tela de game over
-	jogo_data["rank_salvo"] = true
-	
 	# Salva temporariamente os dados do jogo (para uso local)
 	var save_game = FileAccess.open("user://temp_game_data.save", FileAccess.WRITE)
 	save_game.store_line(JSON.stringify(jogo_data))
 	
 	# Vai para a tela de game over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
-
-# Salva a pontuação usando o Firebase
-func salvar_pontuacao(pontuacao):
-	print("Salvando pontuação de %d no Firebase..." % pontuacao)
-	# Usando a função do global
-	global.submit_score(pontuacao)

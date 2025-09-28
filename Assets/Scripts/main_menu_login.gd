@@ -6,32 +6,38 @@ extends Control
 @onready var animation_player = %AnimacaoTexto
 @onready var game_title = %"MenuPrincipal#GameTitle"
 @onready var background = %"MenuPrincipal#Fundo"
-@onready var global = get_node("/root/Global")
-@onready var user_info_label = %UserInfoLabel if has_node("%UserInfoLabel") else null
 
-func _ready():
-	# Verificar se os nós estão disponíveis e imprimir mensagens de debug
-	print("Verificando nós da interface...")
-	
-	# Verifica se todos os nós estão corretamente definidos
-	for node_name in ["login_button", "options_menu_button", "blinking_text",
-					 "animation_player", "game_title", "background"]:
-		if get(node_name) == null:
-			print("ERRO: " + node_name + " não encontrado")
+func _ready() -> void:
+	# 1) Debug: verificar presença dos nós da UI
+	print("Verificando nós da interface…")
+	for node_name in [
+		"login_button",
+		"options_menu_button",
+		"blinking_text",
+		"animation_player",
+		"game_title",
+		"background"
+	]:
+		if not has_node(node_name):
+			print("ERRO: %s não encontrado" % node_name)
 		else:
-			print(node_name + " encontrado")
-	
-	# Conecta ao sinal de mudança de estado de autenticação
-	global.auth_state_changed.connect(_on_auth_state_changed)
-	
-	# Configura a interface com base no estado de autenticação
-	_update_ui_based_on_auth()
-	
-	# Conectar botões somente se não forem nulos
-	if login_button != null:
-		login_button.pressed.connect(_on_login_button_pressed)
-	if options_menu_button != null:
-		options_menu_button.pressed.connect(_on_options_menu_button_pressed)
+			print("%s encontrado" % node_name)
+
+	# 5) Conecta os botões da UI (login e opções)
+	if has_node("login_button"):
+		$login_button.pressed.connect(_on_login_button_pressed)
+	if has_node("options_menu_button"):
+		$options_menu_button.pressed.connect(_on_options_menu_button_pressed)
+# Função utilitária para obter a senha salva localmente (exemplo simples)
+func _get_saved_password() -> String:
+	# ATENÇÃO: Para produção, use um método seguro de armazenamento!
+	var save_path = "user://auth_pwd.save"
+	if FileAccess.file_exists(save_path):
+		var f = FileAccess.open(save_path, FileAccess.READ)
+		var pwd = f.get_line().strip_edges()
+		f.close()
+		return pwd
+	return ""
 
 # Atualiza a UI com base no estado de autenticação
 func _update_ui_based_on_auth():
@@ -83,6 +89,10 @@ func _update_ui_based_on_auth():
 # Callback quando o estado de autenticação muda
 func _on_auth_state_changed(_is_logged_in):
 	_update_ui_based_on_auth()
+	# Só carrega dados se estiver logado e ainda não carregou
+	if global.is_user_logged_in():
+		global.load_user_data()
+		global.load_leaderboard()
 
 # Botão de login → vai para nossa própria tela de login
 func _on_login_button_pressed():
@@ -98,6 +108,6 @@ func _on_options_menu_button_pressed():
 func _on_background_gui_input(event):
 	if global.is_user_logged_in():
 		# Usa o sistema Platform para verificar se é um clique válido para a plataforma atual
-		if global.Platform.is_valid_click(event):
+		if Platform.is_valid_click(event):
 			get_tree().change_scene_to_file("res://Assets/Scenes/MapadoJogo.tscn")
 			print("Indo para o mapa do jogo...")

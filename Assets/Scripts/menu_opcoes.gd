@@ -41,7 +41,7 @@ func _update_perfil_button_visibility():
 
 func _apply_platform_specific_settings():
 	# Aplica configurações específicas para a plataforma atual
-	if global.Platform.is_mobile:
+	if Platform.Platform.is_mobile:
 		# Otimizações para dispositivos móveis
 		print("Aplicando configurações de UI para dispositivos móveis no menu de opções...")
 		# Ajustar tamanhos de botões, fontes etc para telas menores se necessário
