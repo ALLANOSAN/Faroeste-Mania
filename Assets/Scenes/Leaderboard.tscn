@@ -164,3 +164,15 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="BotaoReiniciar" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 0
+offset_left = 266.0
+offset_top = 1282.0
+offset_right = 685.0
+offset_bottom = 1350.0
+theme_override_colors/font_color = Color(1, 0.9, 0.2, 1)
+theme_override_font_sizes/font_size = 32
+text = "Reiniciar"

@@ -20,6 +20,11 @@ run/max_fps=120
 user_id="iWYStFDUDUYMsT1AYHU6YJ9RAPg1"
 id_token="eyJhbGciOiJSUzI1NiIsImtpZCI6ImUzZWU3ZTAyOGUzODg1YTM0NWNlMDcwNTVmODQ2ODYyMjU1YTcwNDYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZmFyb2VzdGUtbWFuaWEiLCJhdWQiOiJmYXJvZXN0ZS1tYW5pYSIsImF1dGhfdGltZSI6MTc1NzM4NzEwMSwidXNlcl9pZCI6ImlXWVN0RkRVRFVZTXNUMUFZSFU2WUo5UkFQZzEiLCJzdWIiOiJpV1lTdEZEVURVWU1zVDFBWUhVNllKOVJBUGcxIiwiaWF0IjoxNzU3Mzg3MTAxLCJleHAiOjE3NTczOTA3MDEsImVtYWlsIjoiYWxsYW5zdHJ5cGVyQGxpdmUuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiYWxsYW5zdHJ5cGVyQGxpdmUuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.QjowceAfFTNrE9H_uUsrXGeeKm003ZxPt6yyj_H1U6pfI3DrsIex7nt8B56fkrzfns-lrwC0ZO5ryjOY-qq7NKofa_i7yyF2Tjfuydfj1evJGH6GotR3CB-FYvx6wswyWmfPfITDysOL-KXqa-2lTCUj-IYopsvUKAqydHWkVW2uAvoOwN_LqbM5y6aP-wP6T4OAn9WK-x-3FKwCtUaS85govFKQfImd2_-E5PCuDdNvEqlKK7wayBTvtrJVfUeJkhyvivZByg_ptYDwOMVmbuVyIv6LRLHxbotT8qDhXBbcp_5VahfKAxt0XLpuPzHNSlUgQ3kCQGk9DGNNuxfvyw"
 
+[autoload]
+
+Firebase="*res://addons/godot-firebase/firebase/firebase.tscn"
+Platform="*res://Assets/Scripts/Platform.gd"
+
 [debug]
 
 run/window_placement/screen=1
@@ -45,7 +50,7 @@ settings/run/debug_window_placement/screen=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot-firebase/plugin.cfg", "res://addons/godot-playfab/plugin.cfg", "res://addons/http-sse-client/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot-firebase/plugin.cfg", "res://addons/http-sse-client/plugin.cfg")
 
 [importer_defaults]
 

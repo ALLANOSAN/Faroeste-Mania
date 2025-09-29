@@ -1,74 +1,101 @@
 extends Control
 
-@onready var placar_container = %VBoxContainer
-@onready var loading_label = %LoadingLabel
-@onready var voltar_button = %BotaoVoltar
-@onready var global = get_node("/root/Global")
+# Nós da cena
+@onready var vbox_scores = $VBoxContainer
+@onready var loading_label = $LoadingLabel
+@onready var botao_voltar = $BotaoVoltar
+@onready var botao_reiniciar = $BotaoReiniciar
 
+# Nó modelo de linha (HBoxContainer)
+@onready var linha_modelo = $HBoxContainerModel
+@onready var posicao_label_modelo = linha_modelo.get_node("PosicaoLabel")
+@onready var nome_label_modelo = linha_modelo.get_node("NomeLabel")
+@onready var pontuacao_label_modelo = linha_modelo.get_node("PontuacaoLabel")
+@onready var posicao_sprite_modelo = linha_modelo.get_node("PosicaoSprite") # Sprite para medalha
+
+# Medalhas
 @onready var medal_gold = preload("res://Assets/Art/medalhaouro.png")
 @onready var medal_silver = preload("res://Assets/Art/medalhaprata.png")
 @onready var medal_bronze = preload("res://Assets/Art/medalhabronze.png")
 
-func _ready() -> void:
-	voltar_button.pressed.connect(_on_voltar)
-	global.scores_updated.connect(_on_scores)
-	loading_label.text = "Carregando…"
-	global.load_leaderboard()
+func _ready():
+	linha_modelo.visible = false # Esconde o modelo
+	botao_reiniciar.connect("pressed", Callable(self, "_on_botao_reiniciar_pressed"))
+	botao_voltar.connect("pressed", Callable(self, "_on_botao_voltar_pressed"))
 
-func _on_voltar() -> void:
-	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+	carregar_scores()
 
-func _on_scores(scores: Array) -> void:
-	loading_label.hide()
-	# Limpa linhas antigas
-	for i in range(placar_container.get_child_count() - 1, 1, -1):
-		placar_container.get_child(i).queue_free()
+# Função para carregar os scores do Firestore
+func carregar_scores() -> void:
+	loading_label.text = "Carregando pontuações..."
+	vbox_scores.clear() # limpa as linhas anteriores
 
-	if scores.size() == 0:
-		var lbl = Label.new()
-		lbl.text = "Nenhuma pontuação"
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		placar_container.add_child(lbl)
+	# Cria a query Firestore
+	var query: FirestoreQuery = FirestoreQuery.new()
+	query.from("scores")
+	query.order_by("pontuacao", FirestoreQuery.DIRECTION.DESCENDING)
+	query.limit(10)
+
+	# Await para buscar os resultados
+	var results: Array = await Firebase.Firestore.query(query)
+
+	# Verifica se retornou algo válido
+	if typeof(results) != TYPE_ARRAY:
+		loading_label.text = "Erro ao carregar pontuações"
+		print("Erro Firestore: resultado inválido")
 		return
 
-	for i in range(scores.size()):
-		var data = scores[i]
-		_add_row(i + 1, data)
+	if results.is_empty():
+		loading_label.text = "Nenhuma pontuação encontrada"
+		return
 
-func _add_row(pos: int, data: Dictionary) -> void:
-	var row = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
+	# Limpa o LoadingLabel para exibir as linhas
+	loading_label.text = ""
 
-	if pos <= 3:
-		var tex: Texture
-		if pos == 1:
-			tex = medal_gold
-		elif pos == 2:
-			tex = medal_silver
-		else:
-			tex = medal_bronze
+	# Cria as linhas da leaderboard
+	for i in range(results.size()):
+		criar_linha(i, results[i])
 
-		var icon = TextureRect.new()
-		icon.texture = tex
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-		icon.custom_minimum_size = Vector2(40, 40)
-		row.add_child(icon)
-	else:
-		var pos_lbl = Label.new()
-		pos_lbl.text = "%dº" % pos
-		row.add_child(pos_lbl)
+# Cria uma linha da leaderboard
+func criar_linha(index: int, score: Dictionary) -> void:
+	var linha = linha_modelo.duplicate()
+	linha.visible = true
 
-	var name_lbl = Label.new()
-	name_lbl.text = data["name"]
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if data["user_id"] == global.get_current_user_id():
-		name_lbl.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
-	row.add_child(name_lbl)
+	var pos_label = linha.get_node("PosicaoLabel")
+	var nome_label = linha.get_node("NomeLabel")
+	var pont_label = linha.get_node("PontuacaoLabel")
+	var pos_sprite = linha.get_node("PosicaoSprite")
 
-	var score_lbl = Label.new()
-	score_lbl.text = str(data["score"])
-	score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	row.add_child(score_lbl)
+	# Define medalhas ou posição numérica
+	match index:
+		0:
+			pos_sprite.texture = medal_gold
+			pos_sprite.visible = true
+			pos_label.visible = false
+		1:
+			pos_sprite.texture = medal_silver
+			pos_sprite.visible = true
+			pos_label.visible = false
+		2:
+			pos_sprite.texture = medal_bronze
+			pos_sprite.visible = true
+			pos_label.visible = false
+		_:
+			pos_label.text = str(index + 1)
+			pos_label.visible = true
+			pos_sprite.visible = false
 
-	placar_container.add_child(row)
-	placar_container.add_child(HSeparator.new())
+	# Preenche nome e pontuação
+	nome_label.text = score.get("nome", "Anon")
+	pont_label.text = str(score.get("pontuacao", 0))
+
+	# Adiciona à VBox
+	vbox_scores.add_child(linha)
+
+# Botão de recarregar rankings
+func _on_botao_reiniciar_pressed():
+	carregar_scores() # Recarrega o rank atualizado
+
+# Botão de voltar
+func _on_botao_voltar_pressed():
+	get_tree().change_scene("res://Scenes/MenuOpções.tscn")

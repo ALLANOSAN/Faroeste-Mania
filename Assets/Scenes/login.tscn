@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://c0otlmgxxl27c"]
 
-[ext_resource type="Script" uid="uid://0repr8skag47" path="res://Assets/Scripts/login_script.gd" id="1_7oay4"]
+[ext_resource type="Script" uid="uid://dxxd6jgsjc6us" path="res://Assets/Scripts/login.gd" id="1_w36li"]
 [ext_resource type="Texture2D" uid="uid://cx37gryegxi5x" path="res://Assets/Art/Faroiest.jpg" id="2_ydel5"]
 
 [node name="LoginScreen" type="Control"]
@@ -10,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_7oay4")
+script = ExtResource("1_w36li")
 
 [node name="Background" type="TextureRect" parent="."]
 layout_mode = 1

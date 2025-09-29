@@ -207,15 +207,7 @@ func perder_vida():
 func game_over():
 	print("Game Over! Pontuação final: ", pontos)
 	
-	# Salvar a pontuação para mostrar na tela de game over
-	var jogo_data = {
-		"pontuacao": pontos,
-		"rank_salvo": false # Inicialmente definimos como falso
-	}
-	
-	# Salva temporariamente os dados do jogo (para uso local)
-	var save_game = FileAccess.open("user://temp_game_data.save", FileAccess.WRITE)
-	save_game.store_line(JSON.stringify(jogo_data))
-	
-	# Vai para a tela de game over
-	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
+	# Vai para a tela de Game Over
+	var game_over_scene = load("res://Assets/Scenes/GameOver.tscn").instantiate()
+	game_over_scene.set_score(pontos)  # Passa a pontuação real
+	get_tree().change_scene_to(game_over_scene)
