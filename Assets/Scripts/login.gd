@@ -6,7 +6,7 @@ func _ready():
 
 	if Firebase.Auth.check_auth_file():
 		%FeedbackText.text = "Logged in"
-		get_tree().change_scene_to_file("Assets/Scenes/MainMenuLogin.tscn")
+		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
 
 func _on_login_button_pressed():
@@ -20,7 +20,7 @@ func on_login_succeeded(auth):
 	print(auth)
 	%FeedbackText.text = "Login success!"
 	Firebase.Auth.save_auth(auth)
-	get_tree().change_scene_to_file("Assets/Scenes/MainMenuLogin.tscn")
+	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
 func on_login_failed(error_code, message):
 	print(error_code)
@@ -31,4 +31,4 @@ func on_login_failed(error_code, message):
 
 
 func _on_signup_button_pressed() -> void:
-	pass # Replace with function body.
+	get_tree().change_scene_to_file("res://Assets/Scenes/signup.tscn")
