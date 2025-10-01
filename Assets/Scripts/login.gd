@@ -25,4 +25,10 @@ func on_login_succeeded(auth):
 func on_login_failed(error_code, message):
 	print(error_code)
 	print(message)
-	%FeedbackText.text = "Login failed. Error: %s" % message	
+	%FeedbackText.text = "Login failed. Error: %s" % message
+	
+	
+
+
+func _on_signup_button_pressed() -> void:
+	pass # Replace with function body.
