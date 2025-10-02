@@ -25,3 +25,6 @@ func on_signup_failed(error_code, message):
 	print(error_code)
 	print(message)
 	%FeedbackText2.text = "Erro ao fazer o cadastro. Error: %s" % message
+
+func _on_back_button_pressed() -> void:
+	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")

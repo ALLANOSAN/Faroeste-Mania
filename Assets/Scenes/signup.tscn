@@ -115,3 +115,5 @@ text = "REGISTRAR"
 unique_name_in_owner = true
 layout_mode = 2
 text = "VOLTAR"
+
+[connection signal="pressed" from="VBoxContainer/back_button" to="." method="_on_back_button_pressed"]
