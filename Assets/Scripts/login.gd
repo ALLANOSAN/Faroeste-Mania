@@ -9,13 +9,6 @@ func _ready():
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
 
-func _on_login_button_pressed():
-	var email = %email.text
-	var password = %password.text
-	Firebase.Auth.login_with_email_and_password(email, password)
-	%FeedbackText.text = "Logging in"
-
-
 func on_login_succeeded(auth):
 	print(auth)
 	%FeedbackText.text = "Login success!"
@@ -30,3 +23,16 @@ func on_login_failed(error_code, message):
 
 func _on_signup_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://Assets/Scenes/signup.tscn")
+
+
+func _on_button_pressed() -> void:
+	var email = %email.text
+	var password = %password.text
+	
+	# Limpa arquivo de autenticação anterior para evitar conflitos
+	if Firebase.Auth.check_auth_file():
+		Firebase.Auth.logout()
+		
+	# Tentativa de login com novos dados
+	Firebase.Auth.login_with_email_and_password(email, password)
+	%FeedbackText.text = "Fazendo login..."

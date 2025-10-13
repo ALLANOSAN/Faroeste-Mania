@@ -105,4 +105,5 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "CRIAR CONTA"
 
+[connection signal="pressed" from="VBoxContainer/button" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/signup_button" to="." method="_on_signup_button_pressed"]
