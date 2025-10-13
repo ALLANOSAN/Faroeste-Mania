@@ -12,7 +12,17 @@ func _ready():
 func on_login_succeeded(auth):
 	print(auth)
 	%FeedbackText.text = "Login success!"
+	
+	# Salva autenticação (função síncrona, sem await)
 	Firebase.Auth.save_auth(auth)
+	print("💾 save_auth() chamado")
+	
+	# Aguarda tempo generoso para o sistema de arquivos gravar
+	# NÃO podemos chamar check_auth_file() aqui porque causaria conflito HTTP
+	print("⏳ Aguardando gravação do arquivo...")
+	await get_tree().create_timer(1.5).timeout
+	
+	print("✅ Login concluído, mudando para o menu...")
 	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
 func on_login_failed(error_code, message):

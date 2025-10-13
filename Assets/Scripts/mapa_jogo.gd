@@ -14,8 +14,9 @@ var combo_timeout = 1.5 # Tempo em segundos para resetar o combo
 var alvo_ativo = false
 var tempo_restante = 0
 
-# Referência aos gerenciadores
-@onready var global = get_node("/root/Global")
+# Dados do usuário (obrigatório estar logado para jogar)
+var user_id = ""
+var user_name = ""
 
 # Referências de nós
 @onready var alvo = %CharacterBody2D
@@ -35,6 +36,9 @@ func _ready():
 	randomize()
 	atualizar_ui()
 	
+	# Verifica se o usuário está logado (sem validar token imediatamente)
+	check_user_login()
+	
 	# Configurar o alvo para aceitar entrada
 	alvo.input_pickable = true
 	
@@ -43,16 +47,63 @@ func _ready():
 		alvo.input_event.connect(_on_alvo_input_event)
 		print("Sinal input_event conectado ao alvo")
 	
-	# Verifica se o jogador está logado para mostrar informações
-	if global.is_user_logged_in():
-		print("Jogador logado: " + global.get_current_user_id())
-		print("Pontuação máxima atual: " + str(global.get_player_high_score()))
-	
 	# Inicia o primeiro spawn diretamente
 	spawn_alvo()
 	
 	# Debug
 	print("MapaJogo inicializado, pronto para jogar!")
+
+# Obtém os dados do usuário logado
+func check_user_login():
+	print("🔍 Verificando autenticação do jogador...")
+	
+	# Verifica se arquivo existe (sem check_auth_file que causa HTTP request)
+	if not FileAccess.file_exists("user://user.auth"):
+		print("❌ Arquivo de autenticação não encontrado!")
+		print("🚪 Voltando para o menu de login...")
+		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+		return
+	
+	print("📁 Arquivo de autenticação encontrado!")
+	
+	# Carrega a autenticação do arquivo SEM tentar refresh automático
+	Firebase.Auth.load_auth()
+	
+	# Aguarda carregar
+	await get_tree().create_timer(0.5).timeout
+	
+	# Pega os dados carregados (NÃO chama get_user_data que tenta refresh)
+	# Acessa diretamente a variável auth do plugin
+	if Firebase.Auth.auth and Firebase.Auth.auth.has("localid"):
+		user_id = Firebase.Auth.auth.localid
+		print("✅ Jogador autenticado!")
+		print("   ID: " + user_id)
+		
+		# Busca o nome do usuário no Firestore
+		get_user_name()
+	else:
+		print("❌ Não foi possível carregar autenticação!")
+		print("🚪 Fazendo logout e voltando para o menu...")
+		Firebase.Auth.logout()
+		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+
+# Busca o nome do usuário no Firestore
+func get_user_name():
+	if user_id.is_empty():
+		return
+		
+	var user_collection = Firebase.Firestore.collection("users")
+	user_collection.get_doc(user_id).then(func(doc):
+		if doc and doc.has_field("display_name"):
+			user_name = doc.get_value("display_name")
+			print("   Nome do usuário: " + user_name)
+		else:
+			user_name = "Jogador " + user_id.substr(0, 5)
+			print("   Nome padrão: " + user_name)
+	).catch(func(error):
+		user_name = "Jogador"
+		print("   Erro ao buscar nome: " + str(error))
+	)
 
 func _process(delta):
 	if alvo_ativo:
@@ -160,10 +211,6 @@ func acertar_alvo():
 	# Ajusta a dificuldade com base na pontuação atual
 	ajustar_dificuldade()
 	
-	# Atualiza a pontuação máxima local
-	if global.is_user_logged_in() and pontos > global.get_player_high_score():
-		global.update_player_high_score(pontos)
-	
 	# Prepara para o próximo spawn imediatamente
 	spawn_alvo()
 	atualizar_ui()
@@ -207,7 +254,41 @@ func perder_vida():
 func game_over():
 	print("Game Over! Pontuação final: ", pontos)
 	
+	# Salva a pontuação (usuário já está logado, obrigatório para jogar)
+	if not user_id.is_empty():
+		save_score()
+	
 	# Vai para a tela de Game Over
 	var game_over_scene = load("res://Assets/Scenes/GameOver.tscn").instantiate()
-	game_over_scene.set_score(pontos)  # Passa a pontuação real
+	game_over_scene.set_score(pontos) # Passa a pontuação real
 	get_tree().change_scene_to(game_over_scene)
+
+# Salva a pontuação do jogador no Firestore
+func save_score():
+	print("💾 Salvando pontuação: " + str(pontos))
+	
+	var user_collection = Firebase.Firestore.collection("users")
+	
+	# Usa await conforme a documentação
+	var doc = await user_collection.get_doc(user_id)
+	
+	if doc:
+		# Verifica se a nova pontuação é maior que a atual
+		var current_score = doc.get_value("score") if doc.has_field("score") else 0
+		
+		if pontos > current_score:
+			# Adiciona ou atualiza os campos no documento
+			doc.add_or_update_field("score", pontos)
+			doc.add_or_update_field("updated_at", Time.get_unix_time_from_system())
+			
+			# Atualiza o documento usando o método correto da coleção
+			var updated_doc = await user_collection.update(doc)
+			
+			if updated_doc:
+				print("✅ Nova pontuação recorde salva: " + str(pontos))
+			else:
+				print("❌ Erro ao atualizar pontuação")
+		else:
+			print("ℹ️ Pontuação atual (" + str(current_score) + ") é maior. Não atualizado.")
+	else:
+		print("⚠️ Documento do usuário não encontrado")
