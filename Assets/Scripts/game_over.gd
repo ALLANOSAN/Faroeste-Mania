@@ -3,23 +3,32 @@ extends Control
 # =========================
 # Variáveis
 # =========================
-var score: int = 0 # Pontuação recebida do jogo
+var score: int = 0 # Pontuação do jogo
+var user_id: String = ""
+var user_name: String = ""
 
 # =========================
 # Nós da UI
 # =========================
 @onready var video_player = $VideoStreamPlayer
-@onready var botao_tela_inicial = $Botao_Tela_Inicial
-@onready var botao_tentar_novamente = $Botao_Tentar_Novamente
-@onready var botao_classificacao = $Botao_Classificacao
-@onready var nomes_label = $NomesLabel
+@onready var botao_tela_inicial = $botao_tela_inicial
+@onready var botao_tentar_novamente = $botao_tentar_novamente
+@onready var botao_classificacao = $botao_classificacao
+@onready var pontuacao_label = $PontuacaoLabel
 
 func _ready():
-	# Inicialmente esconde os botões e label
+	# Busca os dados do jogo que foram armazenados
+	score = GameData.get_pontuacao()
+	user_id = GameData.get_user_id()
+	user_name = GameData.get_user_name()
+	
+	print("🎮 Game Over carregado - Pontuação: %d, Usuário: %s" % [score, user_name])
+	
+	# Inicialmente esconde os botões e label de pontuação
 	botao_tela_inicial.hide()
 	botao_tentar_novamente.hide()
 	botao_classificacao.hide()
-	nomes_label.hide()
+	pontuacao_label.hide()
 
 	# Conecta sinal de fim do vídeo
 	video_player.finished.connect(_on_video_finished)
@@ -28,47 +37,21 @@ func _ready():
 	video_player.stream = preload("res://Assets/Videos/Game-Over.ogv")
 	video_player.play()
 
-# Quando o vídeo termina, mostra os botões e o label
+# Quando o vídeo termina, mostra os botões e a pontuação
 func _on_video_finished():
+	# Atualiza o texto da pontuação
+	pontuacao_label.text = "Pontuação: %d" % score
+	
+	# Mostra todos os elementos
+	pontuacao_label.show()
 	botao_tela_inicial.show()
 	botao_tentar_novamente.show()
 	botao_classificacao.show()
-	nomes_label.show()
 
 	# Conecta sinais dos botões
 	botao_tela_inicial.pressed.connect(_on_tela_inicial_pressed)
 	botao_tentar_novamente.pressed.connect(_on_tentar_novamente_pressed)
 	botao_classificacao.pressed.connect(_on_classificacao_pressed)
-
-	# Aqui já pode salvar a pontuação no Firestore
-	save_score_to_firestore()
-
-# =========================
-# Define a pontuação que veio da cena do jogo
-# =========================
-func set_score(value: int):
-	score = value
-
-# =========================
-# Salva a pontuação no Firestore
-# =========================
-func save_score_to_firestore():
-	if Firebase.Auth.check_auth_file():
-		Firebase.Auth.load_auth()
-		var user_id = Firebase.Auth.get_current_user_uid()
-		var display_name = Firebase.Auth.get_current_user_display_name()
-		
-		var scores_collection = Firebase.Firestore.collection("scores")
-		var score_data = {
-			"display_name": display_name,
-			"score": score,
-			"timestamp": Time.get_unix_time_from_system()
-		}
-		
-		await scores_collection.add(user_id, score_data)
-		print("Pontuação salva com sucesso! -> %s" % score)
-	else:
-		print("Usuário não autenticado. Pontuação não salva.")
 
 # Botão que volta para o menu inicial
 func _on_tela_inicial_pressed():

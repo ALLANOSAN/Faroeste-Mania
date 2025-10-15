@@ -37,7 +37,7 @@ func _ready():
 	atualizar_ui()
 	
 	# Verifica se o usuário está logado (sem validar token imediatamente)
-	check_user_login()
+	await check_user_login()
 	
 	# Configurar o alvo para aceitar entrada
 	alvo.input_pickable = true
@@ -54,8 +54,9 @@ func _ready():
 	print("MapaJogo inicializado, pronto para jogar!")
 
 # Obtém os dados do usuário logado
-func check_user_login():
+func check_user_login() -> void:
 	print("🔍 Verificando autenticação do jogador...")
+	print("⚠️ ATENÇÃO: Este jogo EXIGE login com conta real - Login anônimo NÃO é permitido")
 	
 	# Verifica se arquivo existe (sem check_auth_file que causa HTTP request)
 	if not FileAccess.file_exists("user://user.auth"):
@@ -66,44 +67,110 @@ func check_user_login():
 	
 	print("📁 Arquivo de autenticação encontrado!")
 	
-	# Carrega a autenticação do arquivo SEM tentar refresh automático
-	Firebase.Auth.load_auth()
+	# Carrega a autenticação do arquivo
+	print("⏳ Carregando autenticação...")
+	await Firebase.Auth.load_auth()
 	
-	# Aguarda carregar
-	await get_tree().create_timer(0.5).timeout
+	# Aguarda mais tempo para garantir que a autenticação foi processada completamente
+	# Isso é crucial para que o Firestore reconheça o usuário como autenticado
+	print("⏳ Aguardando processamento da autenticação...")
+	await get_tree().create_timer(1.5).timeout
 	
-	# Pega os dados carregados (NÃO chama get_user_data que tenta refresh)
-	# Acessa diretamente a variável auth do plugin
-	if Firebase.Auth.auth and Firebase.Auth.auth.has("localid"):
-		user_id = Firebase.Auth.auth.localid
-		print("✅ Jogador autenticado!")
-		print("   ID: " + user_id)
-		
-		# Busca o nome do usuário no Firestore
-		get_user_name()
-	else:
-		print("❌ Não foi possível carregar autenticação!")
+	# Segundo a documentação, após load_auth devemos usar get_user_data()
+	# para verificar se o usuário está autenticado
+	print("📡 Verificando dados do usuário...")
+	
+	# Conecta o sinal userdata_received
+	if not Firebase.Auth.userdata_received.is_connected(_on_userdata_received):
+		Firebase.Auth.userdata_received.connect(_on_userdata_received)
+	
+	# Conecta sinal de falha
+	if not Firebase.Auth.login_failed.is_connected(_on_auth_failed):
+		Firebase.Auth.login_failed.connect(_on_auth_failed)
+	
+	# Chama get_user_data() conforme documentação
+	Firebase.Auth.get_user_data()
+	
+	# Aguarda o resultado do get_user_data
+	await get_tree().create_timer(2.0).timeout
+	
+	# Se após 2 segundos não temos user_id, algo deu errado
+	if user_id.is_empty():
+		print("❌ Timeout ao verificar autenticação!")
 		print("🚪 Fazendo logout e voltando para o menu...")
 		Firebase.Auth.logout()
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 
-# Busca o nome do usuário no Firestore
-func get_user_name():
-	if user_id.is_empty():
-		return
+# Callback quando os dados do usuário são recebidos
+func _on_userdata_received(userdata: FirebaseUserData):
+	print("✅ Dados do usuário recebidos!")
+	print("   UserData tipo: ", userdata.get_class())
+	
+	# O userdata é do tipo FirebaseUserData (não é Dictionary)
+	# FirebaseUserData é uma classe com propriedades específicas
+	if userdata:
+		# FirebaseUserData deve ter a propriedade localid ou local_id
+		# Vamos tentar acessar diretamente como propriedade
+		if "localid" in userdata:
+			user_id = str(userdata.localid)
+		elif "local_id" in userdata:
+			user_id = str(userdata.local_id)
+		else:
+			# Tenta converter para string e parsear o JSON
+			print("   🔍 Estrutura do userdata:", str(userdata))
+			user_id = ""
 		
-	var user_collection = Firebase.Firestore.collection("users")
-	user_collection.get_doc(user_id).then(func(doc):
-		if doc and doc.has_field("display_name"):
-			user_name = doc.get_value("display_name")
-			print("   Nome do usuário: " + user_name)
+		if not user_id.is_empty():
+			print("   ID: " + user_id)
+			# Busca o nome do usuário no Firestore
+			await get_user_name()
+		else:
+			print("❌ Não foi possível obter ID do usuário")
+			print("   Verifique a estrutura do FirebaseUserData")
+			Firebase.Auth.logout()
+			get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+
+# Callback quando falha a autenticação
+func _on_auth_failed(error_code, message):
+	print("❌ Falha na autenticação: ", error_code, " - ", message)
+	Firebase.Auth.logout()
+	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+
+# Busca o nome do usuário no Firestore
+func get_user_name() -> void:
+	if user_id.is_empty():
+		print("   ⚠️ ID de usuário vazio, não é possível buscar nome")
+		return
+	
+	print("   🔍 Buscando nome do usuário no Firestore...")
+	print("   📋 User ID válido: " + user_id)
+	
+	# Conecta ao erro do Firestore para debug
+	var user_collection: FirestoreCollection = Firebase.Firestore.collection("users")
+	
+	# Conecta sinal de erro para debug
+	if not user_collection.error.is_connected(_on_firestore_error):
+		user_collection.error.connect(_on_firestore_error)
+	
+	# Busca o documento do usuário
+	var document: FirestoreDocument = await user_collection.get_doc(user_id)
+	
+	# Verifica se o documento foi recuperado com sucesso
+	if document != null and document.doc_name == user_id:
+		# Usa get_value para pegar o campo, conforme documentação
+		if document.keys().has("display_name"):
+			user_name = document.get_value("display_name")
+			print("   ✅ Nome do usuário: " + user_name)
 		else:
 			user_name = "Jogador " + user_id.substr(0, 5)
-			print("   Nome padrão: " + user_name)
-	).catch(func(error):
+			print("   ℹ️ Nome padrão: " + user_name)
+	else:
 		user_name = "Jogador"
-		print("   Erro ao buscar nome: " + str(error))
-	)
+		print("   ❌ Documento não encontrado ou erro ao buscar")
+
+# Callback de erro do Firestore
+func _on_firestore_error(error):
+	print("   ❌ Erro do Firestore: " + str(error))
 
 func _process(delta):
 	if alvo_ativo:
@@ -254,14 +321,17 @@ func perder_vida():
 func game_over():
 	print("Game Over! Pontuação final: ", pontos)
 	
-	# Salva a pontuação (usuário já está logado, obrigatório para jogar)
+	# Armazena os dados do jogo para a tela de Game Over
+	GameData.set_game_over_data(pontos, user_id, user_name)
+	
+	# Salva a pontuação no Firestore (usuário já está logado, obrigatório para jogar)
 	if not user_id.is_empty():
-		save_score()
+		print("⏳ Aguardando salvamento da pontuação...")
+		await save_score()
+		print("✅ Salvamento concluído!")
 	
 	# Vai para a tela de Game Over
-	var game_over_scene = load("res://Assets/Scenes/GameOver.tscn").instantiate()
-	game_over_scene.set_score(pontos) # Passa a pontuação real
-	get_tree().change_scene_to(game_over_scene)
+	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
 
 # Salva a pontuação do jogador no Firestore
 func save_score():
@@ -273,8 +343,12 @@ func save_score():
 	var doc = await user_collection.get_doc(user_id)
 	
 	if doc:
-		# Verifica se a nova pontuação é maior que a atual
-		var current_score = doc.get_value("score") if doc.has_field("score") else 0
+		# get_value retorna null se o campo não existe
+		var current_score_value = doc.get_value("score")
+		var current_score = 0 if current_score_value == null else int(current_score_value)
+		
+		print("   📊 Pontuação atual no Firestore: " + str(current_score))
+		print("   🎯 Nova pontuação: " + str(pontos))
 		
 		if pontos > current_score:
 			# Adiciona ou atualiza os campos no documento
@@ -289,6 +363,6 @@ func save_score():
 			else:
 				print("❌ Erro ao atualizar pontuação")
 		else:
-			print("ℹ️ Pontuação atual (" + str(current_score) + ") é maior. Não atualizado.")
+			print("ℹ️ Pontuação atual (" + str(current_score) + ") é maior ou igual. Não atualizado.")
 	else:
 		print("⚠️ Documento do usuário não encontrado")

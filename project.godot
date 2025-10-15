@@ -24,6 +24,7 @@ id_token="eyJhbGciOiJSUzI1NiIsImtpZCI6ImUzZWU3ZTAyOGUzODg1YTM0NWNlMDcwNTVmODQ2OD
 
 Firebase="*res://addons/godot-firebase/firebase/firebase.tscn"
 Platform="*res://Assets/Scripts/Platform.gd"
+GameData="*res://Assets/Scripts/GameData.gd"
 
 [debug]
 
