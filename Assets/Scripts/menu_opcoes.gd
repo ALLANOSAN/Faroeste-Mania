@@ -26,6 +26,8 @@ func _on_botao_som_pressed():
 	get_tree().change_scene_to_file("res://Assets/Scenes/MenuSOM.tscn")
 	
 func _on_botao_leaderboard_pressed():
+	# O leaderboard vai carregar a autenticação internamente
+	print("📋 Abrindo leaderboard...")
 	get_tree().change_scene_to_file("res://Assets/Scenes/Leaderboard.tscn")
 
 func _on_botao_perfil_pressed():

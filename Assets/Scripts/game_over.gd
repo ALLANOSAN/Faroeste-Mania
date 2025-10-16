@@ -63,4 +63,6 @@ func _on_tentar_novamente_pressed():
 
 # Botão que vai para leaderboard
 func _on_classificacao_pressed():
+	# O leaderboard vai carregar a autenticação internamente
+	print("📋 Abrindo leaderboard do game over...")
 	get_tree().change_scene_to_file("res://Assets/Scenes/Leaderboard.tscn")
