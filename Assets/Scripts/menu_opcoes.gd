@@ -4,7 +4,6 @@ extends Control
 @onready var botao_som = %BTChamarMenuSom
 @onready var botao_leaderboard = %BTChamarMenuLeadboard
 @onready var botao_perfil = %BTPerfilJogador
-@onready var global = get_node("/root/Global")
 
 func _ready():
 	# Conectar os sinais dos botões
@@ -36,14 +35,15 @@ func _on_botao_perfil_pressed():
 
 func _update_perfil_button_visibility():
 	# Mostra o botão de perfil apenas se o usuário estiver logado
-	if global.is_user_logged_in():
+	# Verifica se existe autenticação ativa no Firebase
+	if Firebase.Auth.auth != null and not Firebase.Auth.auth.is_empty() and Firebase.Auth.auth.has("idtoken"):
 		botao_perfil.show()
 	else:
 		botao_perfil.hide()
 
 func _apply_platform_specific_settings():
 	# Aplica configurações específicas para a plataforma atual
-	if Platform.Platform.is_mobile:
+	if Platform.is_mobile:
 		# Otimizações para dispositivos móveis
 		print("Aplicando configurações de UI para dispositivos móveis no menu de opções...")
 		# Ajustar tamanhos de botões, fontes etc para telas menores se necessário

@@ -2,7 +2,6 @@ extends Control
 
 # Referência ao botão de voltar
 @onready var botao_voltar = %BotaoVoltar
-@onready var global = get_node("/root/Global")
 
 func _ready():
 	# Conecta o botão de voltar ao método correspondente
@@ -18,7 +17,7 @@ func _on_botao_voltar_pressed():
 	
 func _apply_platform_specific_settings():
 	# Aplica configurações específicas para a plataforma atual
-	if global.Platform.is_mobile:
+	if Platform.is_mobile:
 		# Otimizações para dispositivos móveis
 		print("Aplicando configurações de UI para dispositivos móveis no menu de som...")
 		# Ajustar tamanhos de botões, sliders etc para telas menores se necessário

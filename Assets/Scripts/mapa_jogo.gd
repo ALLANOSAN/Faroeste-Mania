@@ -56,85 +56,39 @@ func _ready():
 # Obtém os dados do usuário logado
 func check_user_login() -> void:
 	print("🔍 Verificando autenticação do jogador...")
-	print("⚠️ ATENÇÃO: Este jogo EXIGE login com conta real - Login anônimo NÃO é permitido")
 	
-	# Verifica se arquivo existe (sem check_auth_file que causa HTTP request)
-	if not FileAccess.file_exists("user://user.auth"):
-		print("❌ Arquivo de autenticação não encontrado!")
+	# Verifica se o usuário está autenticado NA SESSÃO ATUAL
+	# NÃO usar load_auth() porque pode criar sessão anônima se o token expirou
+	if Firebase.Auth.auth == null or Firebase.Auth.auth.is_empty():
+		print("❌ Usuário não está autenticado na sessão atual!")
 		print("🚪 Voltando para o menu de login...")
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
 		return
 	
-	print("📁 Arquivo de autenticação encontrado!")
-	
-	# Carrega a autenticação do arquivo
-	print("⏳ Carregando autenticação...")
-	await Firebase.Auth.load_auth()
-	
-	# Aguarda mais tempo para garantir que a autenticação foi processada completamente
-	# Isso é crucial para que o Firestore reconheça o usuário como autenticado
-	print("⏳ Aguardando processamento da autenticação...")
-	await get_tree().create_timer(1.5).timeout
-	
-	# Segundo a documentação, após load_auth devemos usar get_user_data()
-	# para verificar se o usuário está autenticado
-	print("📡 Verificando dados do usuário...")
-	
-	# Conecta o sinal userdata_received
-	if not Firebase.Auth.userdata_received.is_connected(_on_userdata_received):
-		Firebase.Auth.userdata_received.connect(_on_userdata_received)
-	
-	# Conecta sinal de falha
-	if not Firebase.Auth.login_failed.is_connected(_on_auth_failed):
-		Firebase.Auth.login_failed.connect(_on_auth_failed)
-	
-	# Chama get_user_data() conforme documentação
-	Firebase.Auth.get_user_data()
-	
-	# Aguarda o resultado do get_user_data
-	await get_tree().create_timer(2.0).timeout
-	
-	# Se após 2 segundos não temos user_id, algo deu errado
-	if user_id.is_empty():
-		print("❌ Timeout ao verificar autenticação!")
-		print("🚪 Fazendo logout e voltando para o menu...")
+	# Verifica se tem idtoken válido
+	if not Firebase.Auth.auth.has("idtoken"):
+		print("❌ Token de autenticação ausente ou inválido!")
+		print("🚪 Voltando para o menu de login...")
 		Firebase.Auth.logout()
 		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
-
-# Callback quando os dados do usuário são recebidos
-func _on_userdata_received(userdata: FirebaseUserData):
-	print("✅ Dados do usuário recebidos!")
-	print("   UserData tipo: ", userdata.get_class())
+		return
 	
-	# O userdata é do tipo FirebaseUserData (não é Dictionary)
-	# FirebaseUserData é uma classe com propriedades específicas
-	if userdata:
-		# FirebaseUserData deve ter a propriedade localid ou local_id
-		# Vamos tentar acessar diretamente como propriedade
-		if "localid" in userdata:
-			user_id = str(userdata.localid)
-		elif "local_id" in userdata:
-			user_id = str(userdata.local_id)
-		else:
-			# Tenta converter para string e parsear o JSON
-			print("   🔍 Estrutura do userdata:", str(userdata))
-			user_id = ""
-		
-		if not user_id.is_empty():
-			print("   ID: " + user_id)
-			# Busca o nome do usuário no Firestore
-			await get_user_name()
-		else:
-			print("❌ Não foi possível obter ID do usuário")
-			print("   Verifique a estrutura do FirebaseUserData")
-			Firebase.Auth.logout()
-			get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
-
-# Callback quando falha a autenticação
-func _on_auth_failed(error_code, message):
-	print("❌ Falha na autenticação: ", error_code, " - ", message)
-	Firebase.Auth.logout()
-	get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+	# Pega o user_id diretamente do auth
+	if Firebase.Auth.auth.has("localid"):
+		user_id = Firebase.Auth.auth.get("localid")
+	elif Firebase.Auth.auth.has("uid"):
+		user_id = Firebase.Auth.auth.get("uid")
+	else:
+		print("❌ UID não encontrado no auth!")
+		Firebase.Auth.logout()
+		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
+		return
+	
+	print("✅ Usuário autenticado na sessão!")
+	print("   User ID: " + user_id)
+	
+	# Busca o nome do usuário no Firestore
+	await get_user_name()
 
 # Busca o nome do usuário no Firestore
 func get_user_name() -> void:

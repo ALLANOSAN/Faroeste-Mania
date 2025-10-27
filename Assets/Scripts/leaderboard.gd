@@ -15,12 +15,28 @@ func _ready():
 	# Conecta ao sinal de erro do Firestore para debug
 	Firebase.Firestore.error.connect(_on_firestore_error)
 	
+	# CRÍTICO: Conecta aos sinais do Auth para manter Firestore.auth sincronizado
+	if not Firebase.Auth.login_succeeded.is_connected(_sync_firestore_auth):
+		Firebase.Auth.login_succeeded.connect(_sync_firestore_auth)
+	if not Firebase.Auth.token_refresh_succeeded.is_connected(_sync_firestore_auth):
+		Firebase.Auth.token_refresh_succeeded.connect(_sync_firestore_auth)
+	
+	# Sincroniza auth imediatamente
+	_sync_firestore_auth(Firebase.Auth.auth)
+	
 	# Conecta os botões
 	botao_reiniciar.pressed.connect(_on_botao_reiniciar_pressed)
 	botao_voltar.pressed.connect(_on_botao_voltar_pressed)
 	
 	# Carrega os scores
 	carregar_scores()
+
+
+# Mantém Firebase.Firestore.auth sincronizado com Firebase.Auth.auth
+func _sync_firestore_auth(auth_data):
+	if auth_data != null and not auth_data.is_empty():
+		Firebase.Firestore.auth = auth_data.duplicate(true)
+		print("🔄 Firestore.auth sincronizado automaticamente")
 
 # Callback para erros do Firestore
 # O sinal error() envia apenas 1 argumento: um Dictionary com os dados do erro
@@ -53,50 +69,64 @@ func carregar_scores() -> void:
 	
 	print("🏆 Buscando jogadores do Firestore...")
 	
-	# CRÍTICO: Segundo a documentação, queries EXIGEM autenticação
-	# Precisamos garantir que o usuário está autenticado no Firebase.Auth
-	print("🔐 Verificando autenticação...")
+	# CRÍTICO: Queries exigem autenticação VÁLIDA (token não expirado)
+	print("🔐 Verificando autenticação da sessão...")
 	
-	# Verifica se existe arquivo de autenticação
-	if not FileAccess.file_exists("user://user.auth"):
-		loading_label.text = "Erro: Usuário não autenticado"
-		print("❌ Arquivo de autenticação não encontrado")
-		return
-	
-	# Carrega a autenticação do arquivo
-	print("⏳ Carregando autenticação do arquivo...")
-	await Firebase.Auth.load_auth()
-	
-	# Aguarda um pouco para o Firebase processar
-	await get_tree().create_timer(0.5).timeout
-	
-	# Verifica se a autenticação foi carregada com sucesso
+	# Verifica se Firebase.Auth.auth já tem dados (usuário logado na sessão)
 	if Firebase.Auth.auth == null or Firebase.Auth.auth.is_empty():
-		loading_label.text = "Erro: Falha ao carregar autenticação"
-		print("❌ Firebase.Auth.auth está vazio após load_auth()")
+		print("❌ Usuário não está autenticado na sessão atual")
+		loading_label.text = "Erro: Faça login primeiro"
 		return
 	
-	print("✅ Autenticação carregada com sucesso")
+	# Verifica se tem token
+	if not Firebase.Auth.auth.has("idtoken"):
+		print("❌ Token de autenticação ausente")
+		loading_label.text = "Erro: Token inválido. Faça login novamente"
+		return
+	
+	print("✅ Usuário autenticado na sessão")
 	print("   User ID: ", Firebase.Auth.auth.get("localid", "N/A"))
-	print("   Token válido: ", Firebase.Auth.auth.has("idtoken"))
+	print("   Email: ", Firebase.Auth.auth.get("email", "N/A"))
+	print("   Token (primeiros 50 chars): ", str(Firebase.Auth.auth.get("idtoken", "")).substr(0, 50))
+	
+	# CRÍTICO: Sincroniza auth do Firebase.Auth para Firebase.Firestore
+	# O plugin NÃO faz isso automaticamente!
+	print("🔄 Sincronizando autenticação com Firestore...")
+	Firebase.Firestore.auth = Firebase.Auth.auth.duplicate(true)
+	
+	# DEBUG: Verifica se o Firestore recebeu o auth corretamente
+	print("✅ Firebase.Firestore.auth sincronizado!")
+	print("   🔍 Firestore.auth tem idtoken?", Firebase.Firestore.auth.has("idtoken"))
+	print("   🔍 Firestore.auth keys:", Firebase.Firestore.auth.keys())
+	
+	# Garante que o idtoken existe (pode estar como "idToken" em vez de "idtoken")
+	if not Firebase.Firestore.auth.has("idtoken") and Firebase.Firestore.auth.has("idToken"):
+		Firebase.Firestore.auth["idtoken"] = Firebase.Firestore.auth["idToken"]
+		print("   ⚠️ Corrigido: copiou idToken para idtoken")
+	
+	# DEBUG: Vamos verificar EXATAMENTE o que está no auth
+	print("🔍 DEBUG - Conteúdo completo de Firebase.Auth.auth:")
+	for key in Firebase.Auth.auth.keys():
+		if key == "idtoken" or key == "refreshtoken":
+			# Mostra apenas primeiros caracteres do token por segurança
+			var token_str = str(Firebase.Auth.auth[key])
+			print("   ", key, ": ", token_str.substr(0, 50), "... (", token_str.length(), " chars)")
+		else:
+			print("   ", key, ": ", Firebase.Auth.auth[key])
 	
 	# Cria a query EXATAMENTE como na documentação
 	# MAS sem order_by() porque ele requer índice no Firebase Console
 	print("📤 Criando query do Firestore...")
 	
-	var query: FirestoreQuery = FirestoreQuery.new()
+	# CORREÇÃO: Firebase.Firestore.list() em vez de collection().list()
+	print("📤 Listando documentos da coleção 'users'...")
 	
-	# FROM a collection (obrigatório)
-	query.from("users")
+	# ÚLTIMO CHECK: Verifica se Firebase.Firestore.auth ainda tem idtoken antes da query
+	print("🔍 ANTES DA LIST - Firebase.Firestore.auth.has('idtoken'):", Firebase.Firestore.auth.has("idtoken"))
+	print("🔍 ANTES DA LIST - Firebase.Firestore.auth é vazio?:", Firebase.Firestore.auth.is_empty())
 	
-	# NÃO usamos order_by() porque precisaria criar índice no Firebase Console
-	# NÃO usamos limit() para pegar todos os usuários
-	# Vamos ordenar manualmente depois
-	
-	print("📤 Executando query: FROM users (sem filtros, sem ordenação)")
-	
-	# Issue the query (como na documentação)
-	var results = await Firebase.Firestore.query(query)
+	# Usa Firebase.Firestore.list() diretamente passando o caminho
+	var results = await Firebase.Firestore.list("users")
 	
 	# Debug: mostra o tipo do resultado
 	print("📦 Tipo do resultado: ", typeof(results))
