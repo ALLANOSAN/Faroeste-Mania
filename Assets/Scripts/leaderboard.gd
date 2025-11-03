@@ -284,4 +284,4 @@ func _on_botao_reiniciar_pressed():
 
 # Botão de voltar
 func _on_botao_voltar_pressed():
-	get_tree().change_scene_to_file("res://Assets/Scenes/MenuOpções.tscn
+	get_tree().change_scene_to_file("res://Assets/Scenes/MenuOpções.tscn")
