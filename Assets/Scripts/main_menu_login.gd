@@ -10,6 +10,16 @@ extends Control
 func _ready():
 	print("🔄 MainMenuLogin._ready() iniciado")
 	
+	# FIX VISUAL: Esconde tudo inicialmente para evitar "ghosting" (elementos piscando errados)
+	if login_button: login_button.hide()
+	if options_menu_button: options_menu_button.hide()
+	if blinking_text: blinking_text.hide()
+	
+	# Conecta botão de opções via código
+	if options_menu_button != null:
+		if not options_menu_button.pressed.is_connected(_on_options_menu_button_pressed):
+			options_menu_button.pressed.connect(_on_options_menu_button_pressed)
+	
 	# FIX CRÍTICO: Força conexão dos sinais do Auth para o Firestore
 	# O plugin deveria fazer isso automaticamente mas às vezes falha
 	if not Firebase.Auth.login_succeeded.is_connected(Firebase.Firestore._on_FirebaseAuth_login_succeeded):
@@ -21,12 +31,12 @@ func _ready():
 		print("✅ Sinais conectados!")
 	
 	# Conecta sinais locais
-	Firebase.Auth.login_succeeded.connect(_on_auth_loaded)
-	Firebase.Auth.token_refresh_succeeded.connect(_on_token_refreshed)
+	if not Firebase.Auth.login_succeeded.is_connected(_on_auth_loaded):
+		Firebase.Auth.login_succeeded.connect(_on_auth_loaded)
+	if not Firebase.Auth.token_refresh_succeeded.is_connected(_on_token_refreshed):
+		Firebase.Auth.token_refresh_succeeded.connect(_on_token_refreshed)
 	
-	# Aguarda o Firebase estar REALMENTE pronto (aumentado para 3s)
-	print("⏳ Aguardando sistema estar pronto...")
-	await get_tree().create_timer(3.0).timeout
+	# REMOVIDO: await get_tree().create_timer(3.0).timeout (Causava delay desnecessário)
 	
 	# Verifica se JÁ está autenticado na sessão (login recente)
 	if Firebase.Auth.auth != null and not Firebase.Auth.auth.is_empty() and Firebase.Auth.auth.has("idtoken"):
@@ -254,3 +264,8 @@ func _on_background_gui_input(event):
 
 func _on_menu_principal_bt_login_pressed() -> void:
 	get_tree().change_scene_to_file("res://Assets/Scenes/login.tscn")
+
+
+func _on_options_menu_button_pressed() -> void:
+	print("⚙️ Abrindo menu de opções...")
+	get_tree().change_scene_to_file("res://Assets/Scenes/MenuOpções.tscn")

@@ -1,0 +1,1 @@
+teria como adicionar modificar o jogo para ter 3 faixas de audio uma para o audio do tiro que já tem um para o tema ambiente e outro para o mapa do jogo, a musica de ambiente tem o nome de Ambiente.mp3, e do mapa nome de Duelo.mp3 e o som de tiro tem Tiro.mp3 e depois no menu de som eu tenho uma barra slide e um botão togle analise para 
