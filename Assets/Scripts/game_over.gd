@@ -24,6 +24,9 @@ func _ready():
 	
 	print("🎮 Game Over carregado - Pontuação: %d, Usuário: %s" % [score, user_name])
 	
+	# Garante que a música do mapa parou
+	AudioManager.stop_music_map()
+	
 	# Inicialmente esconde os botões e label de pontuação
 	botao_tela_inicial.hide()
 	botao_tentar_novamente.hide()

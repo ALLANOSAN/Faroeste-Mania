@@ -56,6 +56,10 @@ func _ready():
 	# Debug
 	print("MapaJogo inicializado, pronto para jogar!")
 
+func _exit_tree():
+	# Para a música quando sair da cena (Game Over, Menu, etc)
+	AudioManager.stop_music_map()
+
 # Obtém os dados do usuário logado
 func check_user_login() -> void:
 	print("🔍 Verificando autenticação do jogador...")
