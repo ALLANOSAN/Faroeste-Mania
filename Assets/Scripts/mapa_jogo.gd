@@ -36,6 +36,9 @@ func _ready():
 	randomize()
 	atualizar_ui()
 	
+	# Inicia música do mapa
+	AudioManager.play_music_map()
+	
 	# Verifica se o usuário está logado (sem validar token imediatamente)
 	await check_user_login()
 	

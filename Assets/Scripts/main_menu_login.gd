@@ -10,6 +10,9 @@ extends Control
 func _ready():
 	print("🔄 MainMenuLogin._ready() iniciado")
 	
+	# Inicia música ambiente
+	AudioManager.play_ambience()
+	
 	# FIX VISUAL: Esconde tudo inicialmente para evitar "ghosting" (elementos piscando errados)
 	if login_button: login_button.hide()
 	if options_menu_button: options_menu_button.hide()

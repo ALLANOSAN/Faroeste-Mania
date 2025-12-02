@@ -25,6 +25,8 @@ id_token="eyJhbGciOiJSUzI1NiIsImtpZCI6ImUzZWU3ZTAyOGUzODg1YTM0NWNlMDcwNTVmODQ2OD
 Firebase="*res://addons/godot-firebase/firebase/firebase.tscn"
 Platform="*res://Assets/Scripts/Platform.gd"
 GameData="*res://Assets/Scripts/GameData.gd"
+AudioManager="*res://Assets/Scripts/AudioManager.gd"
+QuitManager="*res://Assets/Scenes/QuitConfirmation.tscn"
 
 [debug]
 
@@ -40,7 +42,7 @@ window/size/initial_position_type=2
 window/size/initial_position=Vector2i(100, 100)
 window/size/borderless=true
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep_height"
+window/stretch/aspect="expand"
 window/handheld/orientation=1
 window/vsync/vsync_mode=0
 
