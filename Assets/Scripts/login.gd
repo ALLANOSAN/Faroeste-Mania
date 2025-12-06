@@ -127,3 +127,8 @@ func _on_button_pressed() -> void:
 	# Tenta logar
 	Firebase.Auth.login_with_email_and_password(email, password)
 	%FeedbackText.text = "Fazendo login..."
+
+
+# Botão para mostrar/ocultar senha
+func _on_show_password_toggled(toggled_on: bool) -> void:
+	%password.secret = not toggled_on

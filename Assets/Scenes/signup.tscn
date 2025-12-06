@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b324xojkbl53s"]
 
 [ext_resource type="Script" uid="uid://emglp3na5veo" path="res://Assets/Scripts/signup_script.gd" id="1_yem4c"]
-[ext_resource type="Texture2D" uid="uid://cx37gryegxi5x" path="res://Assets/Art/Faroiest.jpg" id="2_7oww2"]
+[ext_resource type="Texture2D" uid="uid://cpbf16itgrgwl" path="res://Assets/Art/Gemini_Generated_Image_74xqgf74xqgf74x.png" id="2_3me1g"]
 
 [node name="RegisterScreen" type="Control"]
 layout_mode = 3
@@ -19,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_7oww2")
+texture = ExtResource("2_3me1g")
 expand_mode = 1
 stretch_mode = 6
 
@@ -87,12 +87,20 @@ max_length = 50
 layout_mode = 2
 text = "Senha:"
 
-[node name="password" type="LineEdit" parent="VBoxContainer"]
+[node name="PasswordContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="password" type="LineEdit" parent="VBoxContainer/PasswordContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 placeholder_text = "Sua senha (min. 8 caracteres)"
 max_length = 30
 secret = true
+
+[node name="ShowPasswordButton" type="CheckButton" parent="VBoxContainer/PasswordContainer"]
+layout_mode = 2
+text = "Ver"
 
 [node name="Spacer" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
@@ -118,3 +126,4 @@ text = "VOLTAR"
 
 [connection signal="pressed" from="VBoxContainer/register_button" to="." method="_on_register_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/back_button" to="." method="_on_back_button_pressed"]
+[connection signal="toggled" from="VBoxContainer/PasswordContainer/ShowPasswordButton" to="." method="_on_show_password_toggled"]

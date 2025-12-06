@@ -1,17 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://cs33efdbt36c1"]
+[gd_scene load_steps=9 format=3 uid="uid://cs33efdbt36c1"]
 
 [ext_resource type="Texture2D" uid="uid://dqug3g25bsg5" path="res://Assets/Art/icons8-voltar-64.png" id="1_fo7ht"]
 [ext_resource type="Script" uid="uid://cw31hw42kgjey" path="res://Assets/Scripts/menu_opcoes.gd" id="1_jkwpf"]
+[ext_resource type="Texture2D" uid="uid://2exv6lpabqxf" path="res://Assets/Art/Gemini_Generated_Image_1f3dz81f3dz81f3d.png" id="2_kfyjv"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0gabg"]
 bg_color = Color(1.15514e-06, 0.636828, 0.951158, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4tj7s"]
-bg_color = Color(0.805676, 0.347913, 0.234287, 1)
-corner_radius_top_left = 59
-corner_radius_top_right = 59
-corner_radius_bottom_right = 59
-corner_radius_bottom_left = 59
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kfyjv"]
 bg_color = Color(0.707967, 0.707967, 0.707967, 1)
@@ -20,8 +14,12 @@ corner_radius_top_right = 59
 corner_radius_bottom_right = 59
 corner_radius_bottom_left = 59
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i077i"]
-bg_color = Color(0.803922, 0.34902, 0.235294, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4tj7s"]
+bg_color = Color(0.805676, 0.347913, 0.234287, 1)
+corner_radius_top_left = 59
+corner_radius_top_right = 59
+corner_radius_bottom_right = 59
+corner_radius_bottom_left = 59
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nnpiv"]
 bg_color = Color(0.709804, 0.709804, 0.709804, 1)
@@ -29,6 +27,9 @@ corner_radius_top_left = 59
 corner_radius_top_right = 59
 corner_radius_bottom_right = 59
 corner_radius_bottom_left = 59
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i077i"]
+bg_color = Color(0.803922, 0.34902, 0.235294, 1)
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -48,6 +49,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_0gabg")
+
+[node name="TextureRect" type="TextureRect" parent="Panel"]
+layout_mode = 0
+offset_right = 1082.0
+offset_bottom = 1921.0
+texture = ExtResource("2_kfyjv")
+expand_mode = 1
 
 [node name="BTChamarMenuSom" type="Button" parent="Panel"]
 unique_name_in_owner = true
@@ -99,8 +107,14 @@ offset_right = 825.0
 offset_bottom = 1292.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 85
+<<<<<<< Updated upstream
 theme_override_styles/focus = SubResource("StyleBoxFlat_4tj7s")
 theme_override_styles/hover = SubResource("StyleBoxFlat_4tj7s")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_4tj7s")
 theme_override_styles/normal = SubResource("StyleBoxFlat_kfyjv")
+=======
+theme_override_styles/normal = SubResource("StyleBoxFlat_nnpiv")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_kfyjv")
+theme_override_styles/hover = SubResource("StyleBoxFlat_4tj7s")
+>>>>>>> Stashed changes
 text = "PERFIL"
