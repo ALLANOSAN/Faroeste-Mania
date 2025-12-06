@@ -42,7 +42,7 @@ window/size/initial_position_type=2
 window/size/initial_position=Vector2i(100, 100)
 window/size/borderless=true
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/aspect="keep"
 window/handheld/orientation=1
 window/vsync/vsync_mode=0
 

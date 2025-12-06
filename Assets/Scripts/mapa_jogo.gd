@@ -31,10 +31,27 @@ var user_name = ""
 	%Vida4
 ]
 
+# Referências para Screen Shake
+@onready var camera = $Camera2D
+@onready var background_layer = $BackgroundLayer
+@onready var ui_layer = $CanvasLayer
+
+# Variáveis de Screen Shake
+var shake_strength: float = 0.0
+var shake_decay: float = 5.0
+
+# Cursor personalizado
+const CURSOR_TEXTURE = preload("res://Assets/Art/ilustracao-em-vetor-revolver-vintage-remixada-da-arte-de-elizabeth-johnson1.png")
+
 func _ready():
 	# Configuração inicial
 	randomize()
 	atualizar_ui()
+	
+	# Define o cursor personalizado (mira/arma)
+	# O hotspot (ponto de clique) está definido no centro da imagem (ajuste conforme necessário)
+	# Se a imagem for muito grande, o cursor ficará grande. O ideal é uma imagem de 32x32 ou 64x64.
+	Input.set_custom_mouse_cursor(CURSOR_TEXTURE)
 	
 	# Inicia música do mapa
 	AudioManager.play_music_map()
@@ -59,6 +76,9 @@ func _ready():
 func _exit_tree():
 	# Para a música quando sair da cena (Game Over, Menu, etc)
 	AudioManager.stop_music_map()
+	
+	# Reseta o cursor para o padrão do sistema
+	Input.set_custom_mouse_cursor(null)
 
 # Obtém os dados do usuário logado
 func check_user_login() -> void:
@@ -134,6 +154,24 @@ func _on_firestore_error(error):
 	print("   ❌ Erro do Firestore: " + str(error))
 
 func _process(delta):
+	# Lógica de Screen Shake
+	if shake_strength > 0:
+		shake_strength = lerp(shake_strength, 0.0, shake_decay * delta)
+		var offset = Vector2(
+			randf_range(-shake_strength, shake_strength),
+			randf_range(-shake_strength, shake_strength)
+		)
+		
+		# Aplica o shake na câmera (afeta o mundo/alvo)
+		if camera:
+			camera.offset = offset
+		
+		# Aplica o shake nos CanvasLayers (afeta UI e Fundo)
+		if background_layer:
+			background_layer.offset = offset
+		if ui_layer:
+			ui_layer.offset = offset
+	
 	if alvo_ativo:
 		# Atualiza o tempo restante
 		tempo_restante -= delta
@@ -256,7 +294,14 @@ func ajustar_dificuldade():
 		tempo_spawn = max(min_tempo_spawn, tempo_spawn - 0.15)
 		print("Dificuldade aumentada! Novo tempo máximo: %.2f" % max_tempo_spawn)
 
+# Função para iniciar o screen shake
+func start_shake(intensity: float = 15.0):
+	shake_strength = intensity
+
 func perder_vida():
+	# Inicia o efeito de tremer a tela
+	start_shake(30.0)
+	
 	vidas -= 1
 	alvo_ativo = false
 	alvo.hide()

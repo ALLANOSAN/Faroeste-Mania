@@ -42,6 +42,9 @@ func _ready():
 
 # Quando o vídeo termina, mostra os botões e a pontuação
 func _on_video_finished():
+	# Inicia música ambiente
+	AudioManager.play_ambience()
+	
 	# Atualiza o texto da pontuação
 	pontuacao_label.text = "Pontuação: %d" % score
 	

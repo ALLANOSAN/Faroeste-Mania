@@ -10,9 +10,10 @@ var ambience_player: AudioStreamPlayer
 var sfx_player: AudioStreamPlayer
 
 # Recursos de áudio
-var music_stream: AudioStream
-var ambience_stream: AudioStream
-var sfx_stream: AudioStream
+# Usamos preload para garantir que o Godot inclua os arquivos na exportação
+var ambience_stream = preload("res://Assets/Audio/Ambiente.mp3")
+var music_stream = preload("res://Assets/Audio/Duelo.mp3")
+var sfx_stream = preload("res://Assets/Audio/tiro.mp3")
 
 # Estado atual
 var current_volume: float = 100.0
@@ -22,26 +23,19 @@ func _ready():
 	# Configurar players
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = "Master"
+	# Configura loop para a música
+	music_player.finished.connect(func(): music_player.play())
 	add_child(music_player)
 	
 	ambience_player = AudioStreamPlayer.new()
 	ambience_player.bus = "Master"
+	# Configura loop para o som ambiente
+	ambience_player.finished.connect(func(): ambience_player.play())
 	add_child(ambience_player)
 	
 	sfx_player = AudioStreamPlayer.new()
 	sfx_player.bus = "Master"
 	add_child(sfx_player)
-	
-	# Carregar áudios
-	# Ajuste os caminhos conforme necessário
-	if FileAccess.file_exists("res://Assets/Audio/Ambiente.mp3"):
-		ambience_stream = load("res://Assets/Audio/Ambiente.mp3")
-	
-	if FileAccess.file_exists("res://Assets/Audio/Duelo.mp3"):
-		music_stream = load("res://Assets/Audio/Duelo.mp3")
-		
-	if FileAccess.file_exists("res://Assets/Audio/tiro.mp3"):
-		sfx_stream = load("res://Assets/Audio/tiro.mp3")
 	
 	# Configurar volume inicial
 	update_volume()

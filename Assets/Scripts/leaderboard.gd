@@ -12,6 +12,9 @@ var medal_silver = preload("res://Assets/Art/medalhaprata.png")
 var medal_bronze = preload("res://Assets/Art/medalhabronze.png")
 
 func _ready():
+	# Inicia música ambiente
+	AudioManager.play_ambience()
+
 	# Conecta ao sinal de erro do Firestore para debug
 	Firebase.Firestore.error.connect(_on_firestore_error)
 

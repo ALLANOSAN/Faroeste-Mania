@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c351x0shwel3l" path="res://Assets/Scripts/leaderboard.gd" id="1_2vt20"]
 [ext_resource type="Texture2D" uid="uid://dqug3g25bsg5" path="res://Assets/Art/icons8-voltar-64.png" id="2_po3na"]
-[ext_resource type="Texture2D" uid="uid://cx37gryegxi5x" path="res://Assets/Art/Faroiest.jpg" id="3_0ib3v"]
+[ext_resource type="Texture2D" uid="uid://2exv6lpabqxf" path="res://Assets/Art/Gemini_Generated_Image_1f3dz81f3dz81f3d.png" id="2_waenx"]
 [ext_resource type="Texture2D" uid="uid://ta4lh6750cl" path="res://Assets/Art/Sem título-1.png" id="4_crh5b"]
 
 [node name="Leaderboard" type="Control"]
@@ -21,7 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("3_0ib3v")
+texture = ExtResource("2_waenx")
 expand_mode = 1
 
 [node name="Titulo" type="Label" parent="."]
