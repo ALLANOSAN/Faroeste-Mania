@@ -69,10 +69,32 @@ func salvar_pontuacao(nome: String, pontos: int) -> bool:
 	if file:
 		file.store_string(JSON.stringify(scores))
 		file.close()
+		# Sincroniza o sistema de arquivos (importante para Web/HTML5)
+		_sync_filesystem()
 		return true
 	else:
 		push_error("Erro ao salvar pontuações locais")
 		return false
+
+
+# Sincroniza o sistema de arquivos para persistência na Web
+func _sync_filesystem() -> void:
+	if OS.has_feature("web"):
+		# Na web, precisamos forçar a sincronização do IndexedDB
+		# Isso garante que os dados sejam salvos permanentemente
+		var js_code = """
+		if (typeof FS !== 'undefined' && FS.syncfs) {
+			FS.syncfs(false, function(err) {
+				if (err) {
+					console.error('Erro ao sincronizar filesystem:', err);
+				} else {
+					console.log('Filesystem sincronizado com sucesso!');
+				}
+			});
+		}
+		"""
+		JavaScriptBridge.eval(js_code)
+		print("🌐 Web: Sincronizando dados para IndexedDB...")
 
 
 # Carrega todas as pontuações do arquivo local
@@ -116,4 +138,5 @@ func eh_top_score(pontos: int) -> bool:
 func limpar_ranking() -> void:
 	if FileAccess.file_exists(SCORES_FILE):
 		DirAccess.remove_absolute(SCORES_FILE)
+		_sync_filesystem()
 		print("🗑️ Ranking local limpo")
