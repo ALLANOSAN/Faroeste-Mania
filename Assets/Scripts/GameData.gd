@@ -23,15 +23,39 @@ func get_pontuacao() -> int:
 # =========================
 
 # Salva uma nova pontuação no ranking local
-func salvar_pontuacao(nome: String, pontos: int) -> void:
+# Se o nome já existe: atualiza apenas se a nova pontuação for maior
+# Se o nome não existe: adiciona normalmente
+func salvar_pontuacao(nome: String, pontos: int) -> bool:
 	var scores = carregar_todas_pontuacoes()
+	var nome_lower = nome.to_lower().strip_edges()
 	
-	# Adiciona nova pontuação
-	scores.append({
-		"nome": nome,
-		"pontos": pontos,
-		"data": Time.get_datetime_string_from_system()
-	})
+	# Verifica se o nome já existe no ranking
+	var indice_existente = -1
+	for i in range(scores.size()):
+		if scores[i].nome.to_lower().strip_edges() == nome_lower:
+			indice_existente = i
+			break
+	
+	if indice_existente >= 0:
+		# Nome já existe - verifica se a nova pontuação é maior
+		var pontuacao_atual = scores[indice_existente].pontos
+		if pontos > pontuacao_atual:
+			# Atualiza a pontuação existente
+			scores[indice_existente].pontos = pontos
+			scores[indice_existente].data = Time.get_datetime_string_from_system()
+			print("🔄 Pontuação atualizada: %s - %d → %d pontos" % [nome, pontuacao_atual, pontos])
+		else:
+			# Pontuação menor ou igual, não faz nada
+			print("⏭️ Pontuação não salva: %s já tem %d pontos (nova: %d)" % [nome, pontuacao_atual, pontos])
+			return false
+	else:
+		# Nome novo - adiciona normalmente
+		scores.append({
+			"nome": nome,
+			"pontos": pontos,
+			"data": Time.get_datetime_string_from_system()
+		})
+		print("💾 Nova pontuação salva: %s - %d pontos" % [nome, pontos])
 	
 	# Ordena por pontuação (maior primeiro)
 	scores.sort_custom(func(a, b): return a.pontos > b.pontos)
@@ -45,9 +69,10 @@ func salvar_pontuacao(nome: String, pontos: int) -> void:
 	if file:
 		file.store_string(JSON.stringify(scores))
 		file.close()
-		print("💾 Pontuação salva localmente: %s - %d pontos" % [nome, pontos])
+		return true
 	else:
 		push_error("Erro ao salvar pontuações locais")
+		return false
 
 
 # Carrega todas as pontuações do arquivo local
