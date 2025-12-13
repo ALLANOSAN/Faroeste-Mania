@@ -13,10 +13,7 @@ var reducao_tempo = 0.1 # Quanto o tempo reduz quando perde vida (ajustado)
 var combo_timeout = 1.5 # Tempo em segundos para resetar o combo
 var alvo_ativo = false
 var tempo_restante = 0
-
-# Dados do usuário (obrigatório estar logado para jogar)
-var user_id = ""
-var user_name = ""
+var invencivel = false # Proteção contra perda de múltiplas vidas em sequência
 
 # Referências de nós
 @onready var alvo = %CharacterBody2D
@@ -40,8 +37,8 @@ var user_name = ""
 var shake_strength: float = 0.0
 var shake_decay: float = 5.0
 
-# Cursor personalizado
-const CURSOR_TEXTURE = preload("res://Assets/Art/ilustracao-em-vetor-revolver-vintage-remixada-da-arte-de-elizabeth-johnson1.png")
+# Cursor personalizado (mira)
+const CURSOR_TEXTURE = preload("res://Assets/Art/set_of_cross_hairs2-removebg-preview.png")
 
 func _ready():
 	# Configuração inicial
@@ -55,9 +52,6 @@ func _ready():
 	
 	# Inicia música do mapa
 	AudioManager.play_music_map()
-	
-	# Verifica se o usuário está logado (sem validar token imediatamente)
-	await check_user_login()
 	
 	# Configurar o alvo para aceitar entrada
 	alvo.input_pickable = true
@@ -79,79 +73,6 @@ func _exit_tree():
 	
 	# Reseta o cursor para o padrão do sistema
 	Input.set_custom_mouse_cursor(null)
-
-# Obtém os dados do usuário logado
-func check_user_login() -> void:
-	print("🔍 Verificando autenticação do jogador...")
-	
-	# Verifica se o usuário está autenticado NA SESSÃO ATUAL
-	# NÃO usar load_auth() porque pode criar sessão anônima se o token expirou
-	if Firebase.Auth.auth == null or Firebase.Auth.auth.is_empty():
-		print("❌ Usuário não está autenticado na sessão atual!")
-		print("🚪 Voltando para o menu de login...")
-		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
-		return
-	
-	# Verifica se tem idtoken válido
-	if not Firebase.Auth.auth.has("idtoken"):
-		print("❌ Token de autenticação ausente ou inválido!")
-		print("🚪 Voltando para o menu de login...")
-		Firebase.Auth.logout()
-		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
-		return
-	
-	# Pega o user_id diretamente do auth
-	if Firebase.Auth.auth.has("localid"):
-		user_id = Firebase.Auth.auth.get("localid")
-	elif Firebase.Auth.auth.has("uid"):
-		user_id = Firebase.Auth.auth.get("uid")
-	else:
-		print("❌ UID não encontrado no auth!")
-		Firebase.Auth.logout()
-		get_tree().change_scene_to_file("res://Assets/Scenes/MainMenuLogin.tscn")
-		return
-	
-	print("✅ Usuário autenticado na sessão!")
-	print("   User ID: " + user_id)
-	
-	# Busca o nome do usuário no Firestore
-	await get_user_name()
-
-# Busca o nome do usuário no Firestore
-func get_user_name() -> void:
-	if user_id.is_empty():
-		print("   ⚠️ ID de usuário vazio, não é possível buscar nome")
-		return
-	
-	print("   🔍 Buscando nome do usuário no Firestore...")
-	print("   📋 User ID válido: " + user_id)
-	
-	# Conecta ao erro do Firestore para debug
-	var user_collection: FirestoreCollection = Firebase.Firestore.collection("users")
-	
-	# Conecta sinal de erro para debug
-	if not user_collection.error.is_connected(_on_firestore_error):
-		user_collection.error.connect(_on_firestore_error)
-	
-	# Busca o documento do usuário
-	var document: FirestoreDocument = await user_collection.get_doc(user_id)
-	
-	# Verifica se o documento foi recuperado com sucesso
-	if document != null and document.doc_name == user_id:
-		# Usa get_value para pegar o campo, conforme documentação
-		if document.keys().has("display_name"):
-			user_name = document.get_value("display_name")
-			print("   ✅ Nome do usuário: " + user_name)
-		else:
-			user_name = "Jogador " + user_id.substr(0, 5)
-			print("   ℹ️ Nome padrão: " + user_name)
-	else:
-		user_name = "Jogador"
-		print("   ❌ Documento não encontrado ou erro ao buscar")
-
-# Callback de erro do Firestore
-func _on_firestore_error(error):
-	print("   ❌ Erro do Firestore: " + str(error))
 
 func _process(delta):
 	# Lógica de Screen Shake
@@ -299,6 +220,13 @@ func start_shake(intensity: float = 15.0):
 	shake_strength = intensity
 
 func perder_vida():
+	# Previne múltiplas perdas de vida em sequência
+	if invencivel:
+		return
+	
+	# Ativa invencibilidade temporária
+	invencivel = true
+	
 	# Inicia o efeito de tremer a tela
 	start_shake(30.0)
 	
@@ -314,61 +242,25 @@ func perder_vida():
 	# Redução mais agressiva quando não clica a tempo
 	tempo_spawn = max(min_tempo_spawn, tempo_spawn - reducao_tempo * 1.5)
 	
+	atualizar_ui()
+	
 	if vidas <= 0:
 		# Game over
 		game_over()
 	else:
-		# Próximo spawn imediato
+		# Aguarda um pequeno intervalo antes de spawnar o próximo alvo
+		# Isso dá tempo ao jogador de se preparar
+		await get_tree().create_timer(0.8).timeout
+		invencivel = false
 		spawn_alvo()
-		atualizar_ui()
 		
 		print("Vida perdida! Vidas restantes: %d - Tempo de spawn: %.2f" % [vidas, tempo_spawn])
 
 func game_over():
 	print("Game Over! Pontuação final: ", pontos)
 	
-	# Armazena os dados do jogo para a tela de Game Over
-	GameData.set_game_over_data(pontos, user_id, user_name)
-	
-	# Salva a pontuação no Firestore (usuário já está logado, obrigatório para jogar)
-	if not user_id.is_empty():
-		print("⏳ Aguardando salvamento da pontuação...")
-		await save_score()
-		print("✅ Salvamento concluído!")
+	# Armazena a pontuação para a tela de Game Over
+	GameData.set_pontuacao(pontos)
 	
 	# Vai para a tela de Game Over
 	get_tree().change_scene_to_file("res://Assets/Scenes/game_over.tscn")
-
-# Salva a pontuação do jogador no Firestore
-func save_score():
-	print("💾 Salvando pontuação: " + str(pontos))
-	
-	var user_collection = Firebase.Firestore.collection("users")
-	
-	# Usa await conforme a documentação
-	var doc = await user_collection.get_doc(user_id)
-	
-	if doc:
-		# get_value retorna null se o campo não existe
-		var current_score_value = doc.get_value("score")
-		var current_score = 0 if current_score_value == null else int(current_score_value)
-		
-		print("   📊 Pontuação atual no Firestore: " + str(current_score))
-		print("   🎯 Nova pontuação: " + str(pontos))
-		
-		if pontos > current_score:
-			# Adiciona ou atualiza os campos no documento
-			doc.add_or_update_field("score", pontos)
-			doc.add_or_update_field("updated_at", Time.get_unix_time_from_system())
-			
-			# Atualiza o documento usando o método correto da coleção
-			var updated_doc = await user_collection.update(doc)
-			
-			if updated_doc:
-				print("✅ Nova pontuação recorde salva: " + str(pontos))
-			else:
-				print("❌ Erro ao atualizar pontuação")
-		else:
-			print("ℹ️ Pontuação atual (" + str(current_score) + ") é maior ou igual. Não atualizado.")
-	else:
-		print("⚠️ Documento do usuário não encontrado")
